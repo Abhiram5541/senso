@@ -8,6 +8,12 @@ import type { DiscoveryQuery } from "./harvest-service";
  * turn, a day's budget decides how many turns a day, and the same list is what
  * an operator sweeps by hand — the scheduler and the script cannot disagree
  * about what "the places" are.
+ *
+ * The rotation is Telangana and Andhra Pradesh only (D50): every place query is
+ * a TG/AP city or a Telugu statewide phrase, so the daily pass spends its quota
+ * on the two states the product is for rather than on national categories or
+ * Karnataka. The national `CATEGORY_PLAN` still exists for a manual harvest; it
+ * is no longer in the daily rotation.
  * ------------------------------------------------------------------------ */
 
 // Active in the last ~18 months. A channel silent longer than that is not a
@@ -16,14 +22,30 @@ const publishedAfter = "2025-03-01T00:00:00Z";
 const IN = { regionCode: "IN", order: "relevance", publishedAfter } as const;
 const en = (q: string, extra: Partial<DiscoveryQuery> = {}): DiscoveryQuery => ({ q, relevanceLanguage: "en", ...IN, ...extra });
 const te = (q: string, extra: Partial<DiscoveryQuery> = {}): DiscoveryQuery => ({ q, relevanceLanguage: "te", ...IN, ...extra });
-const kn = (q: string, extra: Partial<DiscoveryQuery> = {}): DiscoveryQuery => ({ q, relevanceLanguage: "kn", ...IN, ...extra });
 
 /**
  * Searches phrased as a local would write them, ranked by relevance so the
- * results are *about* the place rather than merely popular, in the local
- * script where that is what local creators write in.
+ * results are *about* the place rather than merely popular, in Telugu where
+ * that is what a local creator writes in. Cities span both states —
+ * Hyderabad/Warangal/Karimnagar (Telangana), the Godavari/coastal/Rayalaseema
+ * cities (Andhra Pradesh) — plus a statewide Telugu group that catches a
+ * creator who tags a language, not a city.
  */
-export const PLACE_QUERIES: Record<"Hyderabad" | "Bengaluru" | "Rajahmundry", DiscoveryQuery[]> = {
+export const PLACE_QUERIES: Record<string, DiscoveryQuery[]> = {
+  // Statewide: Telugu is the strongest TG/AP signal, and catches creators who
+  // never name a city.
+  Telugu: [
+    te("telugu vlog"),
+    te("telugu comedy", { videoCategoryId: "23" }),
+    te("telugu food vlog"),
+    te("Andhra Pradesh vlog"),
+    te("Telangana vlog"),
+    te("telugu tech review", { videoCategoryId: "28" }),
+    te("telugu travel vlog", { videoCategoryId: "19" }),
+    te("telugu daily vlog family"),
+    te("telugu fitness gym", { videoCategoryId: "17" }),
+    te("telugu beauty makeup", { videoCategoryId: "26" }),
+  ],
   Hyderabad: [
     en("Hyderabad vlog"),
     en("Hyderabad food vlog"),
@@ -48,28 +70,23 @@ export const PLACE_QUERIES: Record<"Hyderabad" | "Bengaluru" | "Rajahmundry", Di
     te("Hyderabad daily vlog family"),
     en("Hyderabad education coaching", { videoCategoryId: "27" }),
   ],
-  Bengaluru: [
-    en("Bangalore vlog"),
-    en("Bengaluru vlog"),
-    en("Bangalore food vlog"),
-    kn("ಬೆಂಗಳೂರು vlog"),
-    en("Bangalore street food"),
-    en("Bangalore cafe review"),
-    en("Bangalore tech review", { videoCategoryId: "28" }),
-    en("Bangalore startup"),
-    en("Bangalore fitness gym", { videoCategoryId: "17" }),
-    en("Bangalore fashion"),
-    en("Bangalore makeup", { videoCategoryId: "26" }),
-    en("Bangalore weekend getaway travel", { videoCategoryId: "19" }),
-    en("Bangalore comedy", { videoCategoryId: "23" }),
-    en("Bangalore real estate apartment"),
-    kn("Bengaluru kannada vlog"),
-    en("Bangalore traffic"),
-    en("Bangalore cars bikes", { videoCategoryId: "2" }),
-    en("Bangalore PG hostel life"),
-    en("Bengaluru cricket football", { videoCategoryId: "17" }),
-    en("Bangalore software engineer life"),
+  Visakhapatnam: [
+    en("Visakhapatnam vlog"),
+    en("Vizag vlog"),
+    te("విశాఖపట్నం vlog"),
+    en("Vizag food vlog"),
+    en("Vizag beach travel", { videoCategoryId: "19" }),
+    te("vizag telugu vlog"),
   ],
+  Vijayawada: [
+    en("Vijayawada vlog"),
+    te("విజయవాడ vlog"),
+    en("Vijayawada food vlog"),
+    en("Vijayawada street food"),
+    te("vijayawada telugu vlog"),
+  ],
+  Guntur: [en("Guntur vlog"), te("గుంటూరు vlog"), en("Guntur food vlog")],
+  Tirupati: [en("Tirupati vlog"), te("తిరుపతి vlog"), en("Tirupati temple travel", { videoCategoryId: "19" })],
   Rajahmundry: [
     en("Rajahmundry vlog"),
     te("రాజమండ్రి vlog"),
@@ -84,6 +101,13 @@ export const PLACE_QUERIES: Record<"Hyderabad" | "Bengaluru" | "Rajahmundry", Di
     te("Rajahmundry daily vlog"),
     te("East Godavari vlog"),
   ],
+  Kakinada: [en("Kakinada vlog"), te("కాకినాడ vlog"), en("Kakinada food")],
+  Nellore: [en("Nellore vlog"), te("నెల్లూరు vlog"), en("Nellore food")],
+  Kurnool: [en("Kurnool vlog"), te("కర్నూలు vlog")],
+  Warangal: [en("Warangal vlog"), te("వరంగల్ vlog"), en("Warangal food"), te("warangal telugu vlog")],
+  Karimnagar: [en("Karimnagar vlog"), te("కరీంనగర్ vlog")],
+  Nizamabad: [en("Nizamabad vlog"), te("నిజామాబాద్ vlog")],
+  Khammam: [en("Khammam vlog"), te("ఖమ్మం vlog")],
 };
 
 const top = (q: string, lang: string, extra: Partial<DiscoveryQuery> = {}): DiscoveryQuery => ({
@@ -99,7 +123,14 @@ const top = (q: string, lang: string, extra: Partial<DiscoveryQuery> = {}): Disc
  * content about them. Broad phrasings only — with view-count ranking a narrow
  * query returns the same few viral videos every time.
  */
-export const TOP_PLACE_QUERIES: Record<keyof typeof PLACE_QUERIES, DiscoveryQuery[]> = {
+export const TOP_PLACE_QUERIES: Record<string, DiscoveryQuery[]> = {
+  Telugu: [
+    top("telugu", "te"),
+    top("telugu comedy", "te", { videoCategoryId: "23" }),
+    top("telugu vlog", "te"),
+    top("Andhra Pradesh", "te"),
+    top("Telangana", "te"),
+  ],
   Hyderabad: [
     top("Hyderabad", "en"),
     top("హైదరాబాద్", "te"),
@@ -110,16 +141,10 @@ export const TOP_PLACE_QUERIES: Record<keyof typeof PLACE_QUERIES, DiscoveryQuer
     top("Hyderabad telugu", "te"),
     top("Hyderabad comedy", "en", { videoCategoryId: "23" }),
   ],
-  Bengaluru: [
-    top("Bangalore", "en"),
-    top("ಬೆಂಗಳೂರು", "kn"),
-    top("Bengaluru", "en"),
-    top("Bangalore vlog", "en"),
-    top("Bangalore food", "en"),
-    top("Bengaluru kannada", "kn"),
-    top("Bangalore comedy", "en", { videoCategoryId: "23" }),
-    top("Bangalore tech", "en", { videoCategoryId: "28" }),
-  ],
+  Visakhapatnam: [top("Visakhapatnam", "en"), top("Vizag", "en"), top("విశాఖపట్నం", "te"), top("Vizag vlog", "en")],
+  Vijayawada: [top("Vijayawada", "en"), top("విజయవాడ", "te"), top("Vijayawada vlog", "en")],
+  Guntur: [top("Guntur", "en"), top("గుంటూరు", "te")],
+  Tirupati: [top("Tirupati", "en"), top("తిరుపతి", "te")],
   Rajahmundry: [
     top("Rajahmundry", "en"),
     top("రాజమండ్రి", "te"),
@@ -128,6 +153,7 @@ export const TOP_PLACE_QUERIES: Record<keyof typeof PLACE_QUERIES, DiscoveryQuer
     top("Godavari", "te"),
     top("East Godavari", "te"),
   ],
+  Warangal: [top("Warangal", "en"), top("వరంగల్", "te")],
 };
 
 /** Round-robin across places, so a budget that runs out still touched every city. */

@@ -8,7 +8,6 @@ import {
 } from "@/server/data/postgres";
 import { PLANS } from "./discovery-plan";
 import {
-  CATEGORY_PLAN,
   harvest,
   refreshInstagramStale,
   refreshStale,
@@ -42,14 +41,17 @@ import { sendOpsEvent } from "./notification-service";
 export const JOBS_HOUR_UTC = Number(process.env.SOCIALORBIT_DAILY_JOBS_HOUR_UTC ?? 9);
 
 /**
- * Searches per day. Ten is ~1,500 units with the reads behind them; the
- * snapshot pass over 2,400 accounts is ~5,000. Both fit a 10,000 budget with
- * room for operators.
+ * Searches per day. Thirty is ~4,500 units with the reads behind them (a
+ * search is 100 units; the channel reads for what it finds are ~1,500 more),
+ * which leaves ~5,500 of a 10,000 budget for the snapshot pass that now runs
+ * second. Raised from ten (D50) to grow the TG/AP list faster; the knob is the
+ * env var, and the ceiling is the daily quota — past ~60 the snapshot starves.
+ * ponytail: single YouTube key = 10k/day ceiling; a second key is the way up.
  */
-const SEARCHES_PER_DAY = Number(process.env.SOCIALORBIT_DISCOVERY_SEARCHES_PER_DAY ?? 10);
+const SEARCHES_PER_DAY = Number(process.env.SOCIALORBIT_DISCOVERY_SEARCHES_PER_DAY ?? 30);
 
-/** Every query the rotation walks: the category plan, then the places, then the places by size. */
-export const ROTATION: DiscoveryQuery[] = [...CATEGORY_PLAN, ...PLANS.places, ...PLANS.top];
+/** Every query the rotation walks: the TG/AP places, then the same places by size (D50). */
+export const ROTATION: DiscoveryQuery[] = [...PLANS.places, ...PLANS.top];
 
 /**
  * Today's slice of the rotation, derived from the date rather than a stored
@@ -185,10 +187,14 @@ export function startScheduler(): void {
     state.busy = true;
     try {
       if (platformJobs) {
-        const snapshot = await runSnapshotJob(now);
-        if (snapshot) console.log(`[jobs] snapshot: ${snapshot.ingested} read, ${snapshot.remaining} remaining`);
+        // Discover first (D50): it takes its capped slice of the quota before
+        // the snapshot refresh of every existing account can spend the day's
+        // budget, so new TG/AP creators keep arriving. The snapshot runs on
+        // what is left and resumes next tick when the quota cuts it short.
         const discovery = await runDiscoveryJob(now);
         if (discovery) console.log(`[jobs] discover: ${discovery.ingested} new creators`);
+        const snapshot = await runSnapshotJob(now);
+        if (snapshot) console.log(`[jobs] snapshot: ${snapshot.ingested} read, ${snapshot.remaining} remaining`);
       }
       // Scheduled reports are queued rather than generated here: the daily
       // clock decides *what is due*, the queue decides when it runs.

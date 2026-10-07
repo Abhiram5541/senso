@@ -475,6 +475,32 @@ rewrites the table — 109 seconds on production — and in front of the first
 request, on a box whose healthcheck restarts after two failures, that is how
 you get a restart loop.
 
+**D50 — Daily discovery is Telangana and Andhra Pradesh, runs before the snapshot, and is no longer throttled to ten searches.**
+*(Amends D30's job order and discovery cap, and narrows D28's place sweeps to
+the two target states.)* Three changes, one intent: grow the TG/AP list faster.
+
+- **Discover runs before snapshot.** `startScheduler`'s tick called
+  `runSnapshotJob` first, so the refresh of every one of ~9.5k existing
+  accounts could spend the whole 10k/day YouTube quota before discovery got a
+  turn — the snapshot hit "quota exhausted" on live. Discovery now takes its
+  capped slice first; the snapshot runs on the remainder and resumes next tick
+  when the quota cuts it short (it is not recorded when cut short, D30).
+- **The cap rose from 10 to 30 searches/day** (`SEARCHES_PER_DAY` default, env
+  `SOCIALORBIT_DISCOVERY_SEARCHES_PER_DAY` still overrides). ~30 searches is
+  ~4,500 units, leaving ~5,500 for the snapshot. The real ceiling is the single
+  YouTube key's 10k/day; past ~60 searches the snapshot starves. A second key or
+  project is the way up, not a higher cap.
+- **The rotation is TG/AP only.** `ROTATION` dropped the national
+  `CATEGORY_PLAN` (still used by a manual harvest) and the Bengaluru/Karnataka
+  place queries. `discovery-plan.ts` now covers Hyderabad, Warangal, Karimnagar,
+  Nizamabad, Khammam (Telangana), Visakhapatnam, Vijayawada, Guntur, Tirupati,
+  Rajahmundry, Kakinada, Nellore, Kurnool (Andhra Pradesh), and a statewide
+  Telugu group that catches a creator who tags a language, not a city.
+
+Not changed: Instagram still has no discovery (D35 — no public search API), so
+all organic growth is YouTube. The TG/AP pool is finite; once dedup dominates,
+more searches stop buying more creators and the lever becomes fresh queries.
+
 **D45 — An agency's clients are books of work inside one org, and a session's authority is re-read on every request.**
 Two things the tenancy model was missing, and one that was quietly wrong.
 
