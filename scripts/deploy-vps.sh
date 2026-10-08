@@ -43,5 +43,10 @@ rsync -az --delete -e "ssh -i $HOME/.ssh/senso_vps" \
 # it is senso's again the cron healthcheck cannot even traverse into it.
 # Production also refreshes its cron and log rotation; staging has none.
 SETUP="true"; [ "$TARGET" = production ] && SETUP="scripts/vps/install.sh"
-$SSH "cd $DIR && chown -R senso:senso . && npm ci --no-audit --no-fund && NODE_OPTIONS=--max-old-space-size=3072 npm run build && chown -R senso:senso . && sudo -u senso bash -c 'cd $DIR && $SETUP && pm2 startOrReload $DIR/ecosystem.config.cjs --only $APP --update-env && pm2 save'"
+# The rsync keeps the previous `.next` (it is excluded above, so the old build
+# stays live until reload). Its Turbopack cache, carried from an older source
+# tree, makes `next build` fail to resolve its own `next/font/google` virtual
+# module. Clear only the build cache, never `.next/server` or `.next/static`,
+# so the running process keeps serving while this build runs.
+$SSH "cd $DIR && chown -R senso:senso . && npm ci --no-audit --no-fund && rm -rf .next/cache && NODE_OPTIONS=--max-old-space-size=3072 npm run build && chown -R senso:senso . && sudo -u senso bash -c 'cd $DIR && $SETUP && pm2 startOrReload $DIR/ecosystem.config.cjs --only $APP --update-env && pm2 save'"
 $SSH "sleep 6; curl -s -o /dev/null -w 'app: %{http_code}\n' http://127.0.0.1:$PORT/api/internal/health; cat $DIR/DEPLOY_SHA"
