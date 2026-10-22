@@ -1,0 +1,269 @@
+{
+  "version": 1,
+  "jobId": "b6b8439e-fa79-4d04-b6d1-92edbc1a69c2",
+  "sessionId": "17d4a2f8-6fb3-4aa4-a849-53233c492980",
+  "scopeKey": "01674071bd71af7bba448f51b7b066b1fb956c0b7de28ca60aecb1bc9132e1d9",
+  "revision": 14,
+  "createdAt": "2026-10-14T11:34:00.020Z",
+  "updatedAt": "2026-10-22T05:35:37.501Z",
+  "producerGraceExpiresAt": "2026-10-14T11:34:30.021Z",
+  "bestEffortDeadlineAt": "2026-10-14T11:35:21.021Z",
+  "producers": {
+    "core": {
+      "state": "no-op",
+      "intentKey": "1cec7aa5a86b2138299bc7ff75655001249ee9b324c86f1d087141f43d857424",
+      "payloadDigest": "1cec7aa5a86b2138299bc7ff75655001249ee9b324c86f1d087141f43d857424",
+      "sealedAt": "2026-10-22T05:35:37.501Z",
+      "sealedBy": "recovery"
+    },
+    "wiki": {
+      "state": "no-op",
+      "sealedAt": "2026-10-14T11:34:00.062Z",
+      "sealedBy": "wiki-producer"
+    }
+  },
+  "actions": {
+    "foreground-cleanup": {
+      "class": "required",
+      "phase": "deferred-required",
+      "status": "expired",
+      "attempts": 0,
+      "idempotencyKey": "e8aed59dc447607f737ddb93590d04faeca88ab3a15857b26f82768aa3a75524",
+      "payload": {
+        "transcriptPath": "/Users/abhiram/.claude/projects/-Users-abhiram-Downloads-senso/17d4a2f8-6fb3-4aa4-a849-53233c492980.jsonl",
+        "cwd": "/Users/abhiram/Downloads/senso",
+        "reason": "other",
+        "input": {
+          "session_id": "17d4a2f8-6fb3-4aa4-a849-53233c492980",
+          "transcript_path": "/Users/abhiram/.claude/projects/-Users-abhiram-Downloads-senso/17d4a2f8-6fb3-4aa4-a849-53233c492980.jsonl",
+          "cwd": "/Users/abhiram/Downloads/senso",
+          "scratchpad_dir": "/private/tmp/claude-501/-Users-abhiram-Downloads-senso/17d4a2f8-6fb3-4aa4-a849-53233c492980/scratchpad",
+          "prompt_id": "363df033-d1f2-42bd-a883-181034adcd65",
+          "hook_event_name": "SessionEnd",
+          "reason": "other"
+        },
+        "initialTeamNames": [],
+        "openClawRouting": {}
+      },
+      "budgetMs": 9000,
+      "lastOutcomeCode": "required-deadline-expired"
+    },
+    "wiki-capture": {
+      "class": "required",
+      "phase": "deferred-required",
+      "status": "completed",
+      "attempts": 0,
+      "idempotencyKey": "06dd6972dd0cb969fafb256be1d7128a0645d8ce0b869aba33a7c5cba2f0cf83",
+      "payload": {
+        "transcriptPath": "/Users/abhiram/.claude/projects/-Users-abhiram-Downloads-senso/17d4a2f8-6fb3-4aa4-a849-53233c492980.jsonl",
+        "cwd": "/Users/abhiram/Downloads/senso",
+        "reason": "other",
+        "input": {
+          "session_id": "17d4a2f8-6fb3-4aa4-a849-53233c492980",
+          "transcript_path": "/Users/abhiram/.claude/projects/-Users-abhiram-Downloads-senso/17d4a2f8-6fb3-4aa4-a849-53233c492980.jsonl",
+          "cwd": "/Users/abhiram/Downloads/senso",
+          "scratchpad_dir": "/private/tmp/claude-501/-Users-abhiram-Downloads-senso/17d4a2f8-6fb3-4aa4-a849-53233c492980/scratchpad",
+          "prompt_id": "363df033-d1f2-42bd-a883-181034adcd65",
+          "hook_event_name": "SessionEnd",
+          "reason": "other"
+        },
+        "initialTeamNames": [],
+        "openClawRouting": {}
+      },
+      "budgetMs": 9000,
+      "completedAt": "2026-10-14T11:34:00.062Z"
+    },
+    "team-cleanup": {
+      "class": "required",
+      "phase": "deferred-required",
+      "status": "expired",
+      "attempts": 0,
+      "idempotencyKey": "2897d71d4b5a0d1a863f5b54ae5438c08a862e00103f4dbc2feb013a9f79886a",
+      "payload": {
+        "transcriptPath": "/Users/abhiram/.claude/projects/-Users-abhiram-Downloads-senso/17d4a2f8-6fb3-4aa4-a849-53233c492980.jsonl",
+        "cwd": "/Users/abhiram/Downloads/senso",
+        "reason": "other",
+        "input": {
+          "session_id": "17d4a2f8-6fb3-4aa4-a849-53233c492980",
+          "transcript_path": "/Users/abhiram/.claude/projects/-Users-abhiram-Downloads-senso/17d4a2f8-6fb3-4aa4-a849-53233c492980.jsonl",
+          "cwd": "/Users/abhiram/Downloads/senso",
+          "scratchpad_dir": "/private/tmp/claude-501/-Users-abhiram-Downloads-senso/17d4a2f8-6fb3-4aa4-a849-53233c492980/scratchpad",
+          "prompt_id": "363df033-d1f2-42bd-a883-181034adcd65",
+          "hook_event_name": "SessionEnd",
+          "reason": "other"
+        },
+        "initialTeamNames": [],
+        "openClawRouting": {},
+        "terminalization": {
+          "reason": "foreground-cleanup-exhausted",
+          "attempts": 0,
+          "outcomeCode": "required-deadline-expired"
+        }
+      },
+      "budgetMs": 9000,
+      "lastOutcomeCode": "required-core-producer-unavailable"
+    },
+    "python-cleanup": {
+      "class": "required",
+      "phase": "deferred-required",
+      "status": "expired",
+      "attempts": 0,
+      "idempotencyKey": "0e18bbc3fbca8bb52603a232859a0429dbb112b880453e51a9e9dd68da46af69",
+      "payload": {
+        "transcriptPath": "/Users/abhiram/.claude/projects/-Users-abhiram-Downloads-senso/17d4a2f8-6fb3-4aa4-a849-53233c492980.jsonl",
+        "cwd": "/Users/abhiram/Downloads/senso",
+        "reason": "other",
+        "input": {
+          "session_id": "17d4a2f8-6fb3-4aa4-a849-53233c492980",
+          "transcript_path": "/Users/abhiram/.claude/projects/-Users-abhiram-Downloads-senso/17d4a2f8-6fb3-4aa4-a849-53233c492980.jsonl",
+          "cwd": "/Users/abhiram/Downloads/senso",
+          "scratchpad_dir": "/private/tmp/claude-501/-Users-abhiram-Downloads-senso/17d4a2f8-6fb3-4aa4-a849-53233c492980/scratchpad",
+          "prompt_id": "363df033-d1f2-42bd-a883-181034adcd65",
+          "hook_event_name": "SessionEnd",
+          "reason": "other"
+        },
+        "initialTeamNames": [],
+        "openClawRouting": {},
+        "terminalization": {
+          "reason": "foreground-cleanup-exhausted",
+          "attempts": 0,
+          "outcomeCode": "required-deadline-expired"
+        }
+      },
+      "budgetMs": 9000,
+      "lastOutcomeCode": "required-core-producer-unavailable"
+    },
+    "reply-cleanup": {
+      "class": "required",
+      "phase": "deferred-required",
+      "status": "expired",
+      "attempts": 0,
+      "idempotencyKey": "b903e561902f44a58272d309f7ddf20689abec790c0e9251915747bb36c20a4d",
+      "payload": {
+        "transcriptPath": "/Users/abhiram/.claude/projects/-Users-abhiram-Downloads-senso/17d4a2f8-6fb3-4aa4-a849-53233c492980.jsonl",
+        "cwd": "/Users/abhiram/Downloads/senso",
+        "reason": "other",
+        "input": {
+          "session_id": "17d4a2f8-6fb3-4aa4-a849-53233c492980",
+          "transcript_path": "/Users/abhiram/.claude/projects/-Users-abhiram-Downloads-senso/17d4a2f8-6fb3-4aa4-a849-53233c492980.jsonl",
+          "cwd": "/Users/abhiram/Downloads/senso",
+          "scratchpad_dir": "/private/tmp/claude-501/-Users-abhiram-Downloads-senso/17d4a2f8-6fb3-4aa4-a849-53233c492980/scratchpad",
+          "prompt_id": "363df033-d1f2-42bd-a883-181034adcd65",
+          "hook_event_name": "SessionEnd",
+          "reason": "other"
+        },
+        "initialTeamNames": [],
+        "openClawRouting": {},
+        "terminalization": {
+          "reason": "foreground-cleanup-exhausted",
+          "attempts": 0,
+          "outcomeCode": "required-deadline-expired"
+        }
+      },
+      "budgetMs": 9000,
+      "lastOutcomeCode": "required-core-producer-unavailable"
+    },
+    "callback": {
+      "class": "best-effort",
+      "phase": "deferred-best-effort",
+      "status": "expired",
+      "attempts": 0,
+      "idempotencyKey": "79c8568128eb8f844952f7210628e825e5323899df617aabb06e205c43cc6884",
+      "payload": {
+        "transcriptPath": "/Users/abhiram/.claude/projects/-Users-abhiram-Downloads-senso/17d4a2f8-6fb3-4aa4-a849-53233c492980.jsonl",
+        "cwd": "/Users/abhiram/Downloads/senso",
+        "reason": "other",
+        "input": {
+          "session_id": "17d4a2f8-6fb3-4aa4-a849-53233c492980",
+          "transcript_path": "/Users/abhiram/.claude/projects/-Users-abhiram-Downloads-senso/17d4a2f8-6fb3-4aa4-a849-53233c492980.jsonl",
+          "cwd": "/Users/abhiram/Downloads/senso",
+          "scratchpad_dir": "/private/tmp/claude-501/-Users-abhiram-Downloads-senso/17d4a2f8-6fb3-4aa4-a849-53233c492980/scratchpad",
+          "prompt_id": "363df033-d1f2-42bd-a883-181034adcd65",
+          "hook_event_name": "SessionEnd",
+          "reason": "other"
+        },
+        "initialTeamNames": [],
+        "openClawRouting": {},
+        "terminalization": {
+          "reason": "foreground-cleanup-exhausted",
+          "attempts": 0,
+          "outcomeCode": "required-deadline-expired"
+        }
+      },
+      "budgetMs": 2000,
+      "lastOutcomeCode": "best-effort-core-producer-unavailable"
+    },
+    "notification": {
+      "class": "best-effort",
+      "phase": "deferred-best-effort",
+      "status": "expired",
+      "attempts": 0,
+      "idempotencyKey": "86b168aee0c0dcd4b0c4aab45c9878cfa7b553b5cfc84724845c2226a049ae93",
+      "payload": {
+        "transcriptPath": "/Users/abhiram/.claude/projects/-Users-abhiram-Downloads-senso/17d4a2f8-6fb3-4aa4-a849-53233c492980.jsonl",
+        "cwd": "/Users/abhiram/Downloads/senso",
+        "reason": "other",
+        "input": {
+          "session_id": "17d4a2f8-6fb3-4aa4-a849-53233c492980",
+          "transcript_path": "/Users/abhiram/.claude/projects/-Users-abhiram-Downloads-senso/17d4a2f8-6fb3-4aa4-a849-53233c492980.jsonl",
+          "cwd": "/Users/abhiram/Downloads/senso",
+          "scratchpad_dir": "/private/tmp/claude-501/-Users-abhiram-Downloads-senso/17d4a2f8-6fb3-4aa4-a849-53233c492980/scratchpad",
+          "prompt_id": "363df033-d1f2-42bd-a883-181034adcd65",
+          "hook_event_name": "SessionEnd",
+          "reason": "other"
+        },
+        "initialTeamNames": [],
+        "openClawRouting": {},
+        "terminalization": {
+          "reason": "foreground-cleanup-exhausted",
+          "attempts": 0,
+          "outcomeCode": "required-deadline-expired"
+        }
+      },
+      "budgetMs": 2000,
+      "lastOutcomeCode": "best-effort-core-producer-unavailable"
+    },
+    "openclaw": {
+      "class": "best-effort",
+      "phase": "deferred-best-effort",
+      "status": "expired",
+      "attempts": 0,
+      "idempotencyKey": "b16b0dc5db425def68665ae5ff9f96e208af6b360f260856dfd1e45e492743e5",
+      "payload": {
+        "transcriptPath": "/Users/abhiram/.claude/projects/-Users-abhiram-Downloads-senso/17d4a2f8-6fb3-4aa4-a849-53233c492980.jsonl",
+        "cwd": "/Users/abhiram/Downloads/senso",
+        "reason": "other",
+        "input": {
+          "session_id": "17d4a2f8-6fb3-4aa4-a849-53233c492980",
+          "transcript_path": "/Users/abhiram/.claude/projects/-Users-abhiram-Downloads-senso/17d4a2f8-6fb3-4aa4-a849-53233c492980.jsonl",
+          "cwd": "/Users/abhiram/Downloads/senso",
+          "scratchpad_dir": "/private/tmp/claude-501/-Users-abhiram-Downloads-senso/17d4a2f8-6fb3-4aa4-a849-53233c492980/scratchpad",
+          "prompt_id": "363df033-d1f2-42bd-a883-181034adcd65",
+          "hook_event_name": "SessionEnd",
+          "reason": "other"
+        },
+        "initialTeamNames": [],
+        "openClawRouting": {},
+        "terminalization": {
+          "reason": "foreground-cleanup-exhausted",
+          "attempts": 0,
+          "outcomeCode": "required-deadline-expired"
+        }
+      },
+      "budgetMs": 2000,
+      "lastOutcomeCode": "best-effort-core-producer-unavailable"
+    }
+  },
+  "owner": null,
+  "phase": "complete",
+  "recoverableFailure": {
+    "reason": "actions-settled",
+    "releasedAt": "2026-10-22T05:35:37.487Z",
+    "ownerNonce": "ddb43ae2-ccfd-4cf6-93f6-c5ecfdd24382"
+  },
+  "completion": {
+    "completedAt": "2026-10-22T05:35:37.501Z",
+    "terminalDigest": "fbc98db3f79787889be1efb4bf8688f1ea19d28a0ffda7223f49d8f253e93eff",
+    "terminalRevision": 14
+  }
+}

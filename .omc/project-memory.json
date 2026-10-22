@@ -1,0 +1,204 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1792647337073,
+  "projectRoot": "/Users/abhiram/Downloads/senso",
+  "techStack": {
+    "languages": [
+      {
+        "name": "JavaScript/TypeScript",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "package.json"
+        ]
+      },
+      {
+        "name": "TypeScript",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "tsconfig.json"
+        ]
+      }
+    ],
+    "frameworks": [
+      {
+        "name": "next",
+        "version": "16.3.3",
+        "category": "fullstack"
+      },
+      {
+        "name": "react",
+        "version": "19.2.8",
+        "category": "frontend"
+      },
+      {
+        "name": "react-dom",
+        "version": "19.2.8",
+        "category": "frontend"
+      },
+      {
+        "name": "@playwright/test",
+        "version": "1.62.1",
+        "category": "testing"
+      },
+      {
+        "name": "vitest",
+        "version": "4.1.11",
+        "category": "testing"
+      }
+    ],
+    "packageManager": "npm",
+    "runtime": null
+  },
+  "build": {
+    "buildCommand": "npm run build",
+    "testCommand": "npm test",
+    "lintCommand": "npm run lint",
+    "devCommand": "npm run dev",
+    "scripts": {
+      "dev": "next dev",
+      "build": "next build",
+      "start": "next start",
+      "lint": "eslint",
+      "test": "vitest run",
+      "test:watch": "vitest",
+      "typecheck": "tsc --noEmit",
+      "e2e": "playwright test",
+      "audit": "playwright test e2e/audit --project=desktop --workers=1",
+      "data:export": "node scripts/export-data.mjs",
+      "data:pack": "node scripts/pack-data.mjs",
+      "data:seeds": "node scripts/import-seeds.mjs"
+    }
+  },
+  "conventions": {
+    "namingStyle": "camelCase",
+    "importStyle": null,
+    "testPattern": null,
+    "fileOrganization": "type-based"
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [
+      "docs",
+      "public",
+      "scripts",
+      "src"
+    ],
+    "gitBranches": {
+      "defaultBranch": "main",
+      "branchingStrategy": null
+    }
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "docs": {
+      "path": "docs",
+      "purpose": "Documentation",
+      "fileCount": 11,
+      "lastAccessed": 1792647337048,
+      "keyFiles": [
+        "API_COSTS_AND_INFRASTRUCTURE_BUDGET.md",
+        "DATA_COVERAGE.md",
+        "Influencer_Platform_Architecture.docx",
+        "ROADMAP.md",
+        "SENSO_Complete_Documentation.docx"
+      ]
+    },
+    "e2e": {
+      "path": "e2e",
+      "purpose": null,
+      "fileCount": 9,
+      "lastAccessed": 1792647337052,
+      "keyFiles": [
+        "auth.spec.ts",
+        "discovery.spec.ts",
+        "layout.spec.ts",
+        "operator-search.spec.ts",
+        "profile.spec.ts"
+      ]
+    },
+    "public": {
+      "path": "public",
+      "purpose": "Public files",
+      "fileCount": 0,
+      "lastAccessed": 1792647337054,
+      "keyFiles": []
+    },
+    "scripts": {
+      "path": "scripts",
+      "purpose": "Build/utility scripts",
+      "fileCount": 11,
+      "lastAccessed": 1792647337054,
+      "keyFiles": [
+        "backfill-mentions.mjs",
+        "content-parity.mjs",
+        "deploy-vps.sh",
+        "e2e-fixture.mjs",
+        "export-data.mjs"
+      ]
+    },
+    "src": {
+      "path": "src",
+      "purpose": "Source code",
+      "fileCount": 1,
+      "lastAccessed": 1792647337055,
+      "keyFiles": [
+        "instrumentation.ts"
+      ]
+    },
+    "test-results": {
+      "path": "test-results",
+      "purpose": null,
+      "fileCount": 3,
+      "lastAccessed": 1792647337055,
+      "keyFiles": [
+        "control-audit.json",
+        "ui-audit.json"
+      ]
+    },
+    "e2e/fixtures": {
+      "path": "e2e/fixtures",
+      "purpose": "Test fixtures",
+      "fileCount": 1,
+      "lastAccessed": 1792647337056,
+      "keyFiles": [
+        "ingested.json.gz"
+      ]
+    },
+    "src/app": {
+      "path": "src/app",
+      "purpose": "Application code",
+      "fileCount": 5,
+      "lastAccessed": 1792647337056,
+      "keyFiles": [
+        "apple-icon.png",
+        "globals.css",
+        "icon.svg"
+      ]
+    },
+    "src/components": {
+      "path": "src/components",
+      "purpose": "UI components",
+      "fileCount": 1,
+      "lastAccessed": 1792647337057,
+      "keyFiles": [
+        "query-provider.tsx"
+      ]
+    },
+    "src/lib": {
+      "path": "src/lib",
+      "purpose": "Library code",
+      "fileCount": 3,
+      "lastAccessed": 1792647337057,
+      "keyFiles": [
+        "class-names.ts",
+        "format.ts",
+        "navigation.ts"
+      ]
+    }
+  },
+  "hotPaths": [],
+  "userDirectives": []
+}

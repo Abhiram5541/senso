@@ -39,3 +39,45 @@ describe("signPayload", () => {
     expect(notifyChannels().webhook).toBe(false);
   });
 });
+
+describe("mail transport selection", () => {
+  const clear = () => {
+    for (const key of ["EMAIL_FROM", "RESEND_API_KEY", "SMTP_HOST", "SMTP_USER", "SMTP_PASSWORD"]) {
+      delete process.env[key];
+    }
+  };
+
+  it("is none without a sender, whatever else is configured", async () => {
+    const { mailTransport } = await import("./notification-service");
+    clear();
+    process.env.RESEND_API_KEY = "re_x";
+    process.env.SMTP_HOST = "smtp.example.com";
+    expect(mailTransport()).toBe("none");
+    clear();
+  });
+
+  it("prefers SMTP when its three variables are set — an operator who set a host meant it", async () => {
+    const { mailTransport, mailTracksDelivery } = await import("./notification-service");
+    clear();
+    process.env.EMAIL_FROM = "SENSO <noreply@senso360.com>";
+    process.env.RESEND_API_KEY = "re_x";
+    process.env.SMTP_HOST = "smtp.example.com";
+    process.env.SMTP_USER = "user";
+    process.env.SMTP_PASSWORD = "pass";
+    expect(mailTransport()).toBe("smtp");
+    // The point of the flag: SMTP has no callback, so tracking is off.
+    expect(mailTracksDelivery()).toBe(false);
+    clear();
+  });
+
+  it("falls back to Resend when SMTP is only half configured", async () => {
+    const { mailTransport, mailTracksDelivery } = await import("./notification-service");
+    clear();
+    process.env.EMAIL_FROM = "SENSO <noreply@senso360.com>";
+    process.env.RESEND_API_KEY = "re_x";
+    process.env.SMTP_HOST = "smtp.example.com"; // no user, no password
+    expect(mailTransport()).toBe("resend");
+    expect(mailTracksDelivery()).toBe(true);
+    clear();
+  });
+});
