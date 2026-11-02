@@ -58,6 +58,23 @@ const nextConfig: NextConfig = {
     ];
   },
 
+  /*
+   * `pg` is on Next's own auto-external list, but under Turbopack the SSR
+   * graph resolved it as the mangled external id rather than the package:
+   *
+   *   Failed to load external module pg-587764f78a6c7a9c:
+   *   ERR_MODULE_NOT_FOUND: Cannot find package 'pg-587764f78a6c7a9c'
+   *     imported from .next/server/chunks/ssr/[turbopack]_runtime.js
+   *
+   * Only production hit it, because only production runs
+   * SENSO_SLIM_CONTENT=true: that is what makes a page render query Postgres
+   * for a content row's caption or url instead of reading it from memory.
+   * Staging, which is not slim, never reaches the driver from a render and so
+   * never saw it. Declaring the package explicitly makes the externalisation
+   * deterministic rather than inherited from the default list.
+   */
+  serverExternalPackages: ["pg"],
+
   experimental: {
     // A page visited in the last minute is served again from the client's
     // router cache rather than re-rendered: moving between the overview, the
