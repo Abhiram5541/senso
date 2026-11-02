@@ -37,6 +37,18 @@ if command -v rclone >/dev/null && rclone listremotes 2>/dev/null | grep -q '^se
     failed=1
   fi
 fi
+# Prune the off-box copy on the same clock as the local one. `rclone copy`
+# never deletes, so without this the bucket grows about 46 GB a year and
+# leaves B2's free 10 GB in roughly two months. Deliberately `delete --min-age`
+# rather than `sync`: sync mirrors absence, so anything that wiped the local
+# dumps would erase the off-box copies on the next run — which is the one
+# failure the off-box copy exists to survive.
+if [ "$failed" = 0 ] && [ "$offbox" != "local only" ]; then
+  pruned=$(rclone delete senso-backups:senso/databases/ \
+    --min-age "${KEEP_DAYS}d" --include 'senso-*.dump' --rmdirs=false 2>&1 | tail -1 || true)
+  [ -n "$pruned" ] && echo "$(date -u +%FT%TZ) prune: $pruned"
+fi
+
 echo "$(date -u +%FT%TZ) backup $file ($size) — $offbox"
 # Non-zero so cron and the healthcheck see it too; the dump itself is safe.
 exit "$failed"
