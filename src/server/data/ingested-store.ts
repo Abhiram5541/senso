@@ -284,9 +284,33 @@ export function upsertIngested(records: IngestedRecord[]): Promise<void> {
   const current = store();
   const ids = new Set(records.map((record) => record.influencer.id));
 
+  /*
+   * `createdAt` survives a refresh.
+   *
+   * A record is rebuilt from scratch on every read, and the Instagram and X
+   * builders stamp `createdAt` with the collection time because at build time
+   * there is nothing else to use. Replacing the row wholesale therefore moved
+   * the field forward every night: on production 1,236 of 1,238 Instagram
+   * creators had `createdAt` equal to `lastRefreshedAt`, so none of them had a
+   * first-seen date any more. Destroying a collection-origin fact is the one
+   * thing this product cannot do.
+   *
+   * Kept here rather than in each builder because this is the only place that
+   * can see both the new record and the stored one. YouTube is unaffected
+   * either way: its `createdAt` is the channel's own publish date, which does
+   * not move.
+   */
+  const held = new Map(
+    current.influencers.filter((item) => ids.has(item.id)).map((item) => [item.id, item.createdAt]),
+  );
+  const influencers = records.map((record) => {
+    const first = held.get(record.influencer.id);
+    return first ? { ...record.influencer, createdAt: first } : record.influencer;
+  });
+
   current.influencers = [
     ...current.influencers.filter((item) => !ids.has(item.id)),
-    ...records.map((record) => record.influencer),
+    ...influencers,
   ];
   current.accounts = [
     ...current.accounts.filter((item) => !ids.has(item.influencerId)),
@@ -309,7 +333,7 @@ export function upsertIngested(records: IngestedRecord[]): Promise<void> {
 
   const owners = [...ids];
   return commit(current, [
-    { table: "influencers", upsert: records.map((record) => record.influencer) },
+    { table: "influencers", upsert: influencers },
     { table: "accounts", deleteOwners: owners },
     { table: "accounts", upsert: records.flatMap((record) => record.accounts) },
     { table: "content", deleteOwners: owners },
