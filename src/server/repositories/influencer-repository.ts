@@ -1058,11 +1058,26 @@ function buildSignalReading(
  * than `SUMMARIES_MAX_AGE_MS` old; the only synchronous pass is a cold
  * process's first, which `warmSummaries` takes at boot so no request pays it.
  *
+ * The pass publishes its list as it builds it, which is not an optimisation
+ * but a correctness fix. Publishing only at the end left `summariesCache`
+ * null for the whole pass — 26 seconds at 12.8k creators on the production
+ * box — and the cold branch below does not check `passRunning`, so every
+ * request arriving in that window rescored the entire database on its own
+ * request thread, in parallel with the warm pass and with every other such
+ * request. One boot took 71.6s for exactly that reason. Now a reader finds a
+ * cache within the first slice and nobody duplicates the work.
+ *
+ * A partial list is always stale, so the next read starts a pass that
+ * finishes it: a pass that throws half way cannot leave a short list sitting
+ * there for five minutes.
+ *
  * ponytail: full recompute per pass. Per-creator memoisation keyed on row
  * identity would make a pass O(changed) — do it when the pass stops fitting
  * between two writes.
  */
-let summariesCache: { revision: number; computedAt: number; list: InfluencerSummary[] } | null = null;
+let summariesCache:
+  | { revision: number; computedAt: number; complete: boolean; list: InfluencerSummary[] }
+  | null = null;
 let passRunning = false;
 
 const SUMMARIES_MAX_AGE_MS = 5 * 60_000;
@@ -1079,12 +1094,20 @@ const PASS_SLICE_MS = 40;
 
 const yieldToLoop = () => new Promise<void>((resolve) => setImmediate(resolve));
 
-/** Runs `work` over `items`, handing the event loop back every PASS_SLICE_MS. */
-async function sliced<T>(items: T[], work: (item: T) => void): Promise<void> {
+/**
+ * Runs `work` over `items`, handing the event loop back every PASS_SLICE_MS.
+ * `onSlice` runs at each hand-back, for work that wants to publish progress.
+ */
+async function sliced<T>(
+  items: T[],
+  work: (item: T) => void,
+  onSlice?: () => void,
+): Promise<void> {
   let sliceStart = performance.now();
   for (const item of items) {
     work(item);
     if (performance.now() - sliceStart > PASS_SLICE_MS) {
+      onSlice?.();
       await yieldToLoop();
       sliceStart = performance.now();
     }
@@ -1103,12 +1126,26 @@ async function runScoringPass(now: Date): Promise<void> {
     cohortCache = { revision, map: finishCohorts(buckets) };
 
     const list: InfluencerSummary[] = [];
-    await sliced(influencers, (raw) => {
-      if (raw.status !== "published") return;
-      const summary = toSummary(raw.id, now);
-      if (summary) list.push(summary);
-    });
-    summariesCache = { revision, computedAt: Date.now(), list };
+    // A fresh array each time: `databaseStats` caches on the list's identity,
+    // so publishing the same growing array would pin its first reading.
+    const publish = (complete: boolean) => {
+      summariesCache = { revision, computedAt: Date.now(), complete, list: [...list] };
+    };
+    // Present before the first summary, so a request landing between the
+    // cohort pass and the first slice finds a cache rather than the cold
+    // branch. The headline coverage figures come from `countInfluencers`, not
+    // from this list, so a short list does not understate the database.
+    publish(false);
+    await sliced(
+      influencers,
+      (raw) => {
+        if (raw.status !== "published") return;
+        const summary = toSummary(raw.id, now);
+        if (summary) list.push(summary);
+      },
+      () => publish(false),
+    );
+    summariesCache = { revision, computedAt: Date.now(), complete: true, list };
   } finally {
     passRunning = false;
   }
@@ -1119,6 +1156,7 @@ export function allSummaries(now: Date = new Date()): InfluencerSummary[] {
   const age = summariesCache ? Date.now() - summariesCache.computedAt : Infinity;
   const stale =
     !summariesCache ||
+    !summariesCache.complete ||
     (summariesCache.revision !== revision && age > PASS_MIN_INTERVAL_MS) ||
     age > SUMMARIES_MAX_AGE_MS;
 
@@ -1136,7 +1174,7 @@ export function allSummaries(now: Date = new Date()): InfluencerSummary[] {
     .influencers.filter((raw) => raw.status === "published")
     .map((raw) => toSummary(raw.id, now))
     .filter((summary): summary is InfluencerSummary => summary !== null);
-  summariesCache = { revision, computedAt: now.getTime(), list };
+  summariesCache = { revision, computedAt: now.getTime(), complete: true, list };
   return list;
 }
 
