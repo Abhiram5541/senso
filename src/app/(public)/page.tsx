@@ -26,22 +26,57 @@ export const metadata: Metadata = {
     "Find the creators worth betting your brand on. Discovery, evaluation, verification and campaign measurement for marketing teams — with evidence behind every important number.",
 };
 
-// The proof bar reads the live database, which `force-dynamic` took to mean
-// the page may never be cached — so every visitor paid for the scatter, the
-// facet counts, the stats and a full hero profile. At 12.6k creators on the
-// production box that is seven seconds of event loop per request, and the
-// loop is shared, so a click on any other route queued behind it.
+// The proof bar reads the live database, so the page is rendered at runtime.
 //
-// It prerenders at build time instead, because the build loads the record set
-// (`instrumentation.ts`) and so renders the real figures, not an empty state.
-//
-// The database moves on a daily cadence (D30's two jobs), so the page is
-// rendered once an hour and served from the cache in between. The window is an
-// hour rather than a few minutes because the render still costs seconds of
-// event loop when it happens, and this process is the whole server: every
-// regeneration is a stall for whoever is using the application at the time.
-// Being an hour behind a once-a-day harvest is invisible; the stall is not.
-export const revalidate = 3600;
+// It is NOT prerendered with `revalidate`, which was tried and reverted: the
+// record set is loaded asynchronously at boot (`instrumentation.ts`) and
+// static generation does not wait for it, so the build prerendered a page
+// reading "0 creators indexed" and ISR then served that for an hour. The
+// build log says so in as many words — "ingested store read before warm-up;
+// serving empty until it runs". A marketing page claiming an empty database
+// is a worse failure than a slow one, on this product especially.
+export const dynamic = "force-dynamic";
+
+/**
+ * The live reads behind the page, computed once an hour rather than once a
+ * visitor.
+ *
+ * `force-dynamic` means no page cache, and these four calls are the cost:
+ * the facet counts, the quality scatter and the coverage stats each walk
+ * every scored creator, and the hero is a full profile assembly. At 12.6k
+ * creators on the production box that was ~7s of event loop *per request* —
+ * and because the process is single-threaded and is the whole server, other
+ * routes queued behind it.
+ *
+ * The record set moves on a daily cadence (D30's two jobs), so an hour-old
+ * read is indistinguishable from a fresh one here.
+ *
+ * An empty read is never cached. That is not defensiveness: caching one is
+ * exactly how the prerender above shipped zeros to production.
+ */
+const LIVE_TTL_MS = 60 * 60_000;
+let liveCache: { at: number; value: LandingSnapshot } | null = null;
+
+type LandingSnapshot = ReturnType<typeof readLive>;
+
+function readLive() {
+  const stats = databaseStats();
+  const { hero, rows } = landingCreators();
+  return {
+    stats,
+    rows,
+    dossier: hero ? toLiveDossier(hero, rows[0]) : null,
+    facets: landingFacets(),
+    quality: landingQualityPoints(),
+  };
+}
+
+function liveSnapshot(): LandingSnapshot {
+  if (liveCache && Date.now() - liveCache.at < LIVE_TTL_MS) return liveCache.value;
+  const value = readLive();
+  if (value.stats.totalInfluencers > 0) liveCache = { at: Date.now(), value };
+  return value;
+}
 
 /* ---------------------------------------------------------------------------
  * The landing page.
@@ -156,16 +191,12 @@ function SectionHeader({
 }
 
 export default function LandingPage() {
-  // Real coverage from the running database. The only unmarked figures on the
-  // page, because they are the only ones that were measured.
-  const stats = databaseStats();
-  // A real creator for the hero and the dossier, real rows for the search
-  // surface, real facet counts and the real quality scatter. The campaign and
-  // AI examples stay illustrative (live.ts says why) and are disclosed.
-  const { hero, rows } = landingCreators();
-  const dossier = hero ? toLiveDossier(hero, rows[0]) : null;
-  const facets = landingFacets();
-  const quality = landingQualityPoints();
+  // Real coverage from the running database — the only unmarked figures on the
+  // page, because they are the only ones that were measured — a real creator
+  // for the hero and the dossier, real rows for the search surface, real facet
+  // counts and the real quality scatter. The campaign and AI examples stay
+  // illustrative (live.ts says why) and are disclosed.
+  const { stats, rows, dossier, facets, quality } = liveSnapshot();
   const live = [
     { label: "Creators indexed", raw: stats.totalInfluencers, value: formatCompact(stats.totalInfluencers) },
     { label: "Content items read", raw: stats.totalContent, value: formatCompact(stats.totalContent) },
