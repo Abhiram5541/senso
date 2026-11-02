@@ -50,6 +50,7 @@ import {
   type HealthEvidence,
 } from "@/server/scoring/formulas";
 import { ingestedRevision } from "@/server/data/ingested-store";
+import { shared } from "@/server/data/process-store";
 import {
   readRecords,
   type DataView,
@@ -318,7 +319,31 @@ function followerBandOf(followers: number | null): FollowerBand {
  * that no longer exists — and withhold the benchmark of the creator that had
  * just completed the cohort.
  */
-let cohortCache: { revision: number; map: Map<string, Cohort> } | null = null;
+/**
+ * Scoring state, anchored on `globalThis` rather than on this module.
+ *
+ * D7: Next builds route handlers and server components into separate module
+ * graphs, so module-level state is instantiated more than once.
+ * `ingested-store` already anchors the rows this way, which is why every
+ * graph sees the same database — but these derived caches did not, so
+ * `warmSummaries` at boot warmed only the graph instrumentation runs in. The
+ * landing page's graph found a null cache and took the full synchronous pass
+ * itself: 24-29 seconds on the first request after every deploy, while the
+ * boot pass it should have been reading finished, unused, in another graph.
+ */
+interface ScoringState {
+  cohorts: { revision: number; map: Map<string, Cohort> } | null;
+  summaries:
+    | { revision: number; computedAt: number; complete: boolean; list: InfluencerSummary[] }
+    | null;
+  passRunning: boolean;
+}
+
+const scoring = shared<ScoringState>("senso.scoring", () => ({
+  cohorts: null,
+  summaries: null,
+  passRunning: false,
+}));
 
 type CohortBuckets = Map<string, { engagement: number[]; vpf: number[]; medianViews: number[] }>;
 
@@ -363,11 +388,11 @@ function finishCohorts(buckets: CohortBuckets): Map<string, Cohort> {
  * Only a process that has never scored computes here, synchronously.
  */
 function cohorts(now: Date): Map<string, Cohort> {
-  if (cohortCache) return cohortCache.map;
+  if (scoring.cohorts) return scoring.cohorts.map;
   const buckets: CohortBuckets = new Map();
   for (const raw of readRecords().influencers) bucketCohort(buckets, raw, now);
-  cohortCache = { revision: ingestedRevision(), map: finishCohorts(buckets) };
-  return cohortCache.map;
+  scoring.cohorts = { revision: ingestedRevision(), map: finishCohorts(buckets) };
+  return scoring.cohorts.map;
 }
 
 /**
@@ -1059,9 +1084,9 @@ function buildSignalReading(
  * process's first, which `warmSummaries` takes at boot so no request pays it.
  *
  * The pass publishes its list as it builds it, which is not an optimisation
- * but a correctness fix. Publishing only at the end left `summariesCache`
+ * but a correctness fix. Publishing only at the end left `scoring.summaries`
  * null for the whole pass — 26 seconds at 12.8k creators on the production
- * box — and the cold branch below does not check `passRunning`, so every
+ * box — and the cold branch below does not check `scoring.passRunning`, so every
  * request arriving in that window rescored the entire database on its own
  * request thread, in parallel with the warm pass and with every other such
  * request. One boot took 71.6s for exactly that reason. Now a reader finds a
@@ -1075,10 +1100,7 @@ function buildSignalReading(
  * identity would make a pass O(changed) — do it when the pass stops fitting
  * between two writes.
  */
-let summariesCache:
-  | { revision: number; computedAt: number; complete: boolean; list: InfluencerSummary[] }
-  | null = null;
-let passRunning = false;
+
 
 const SUMMARIES_MAX_AGE_MS = 5 * 60_000;
 /**
@@ -1115,8 +1137,8 @@ async function sliced<T>(
 }
 
 async function runScoringPass(now: Date): Promise<void> {
-  if (passRunning) return;
-  passRunning = true;
+  if (scoring.passRunning) return;
+  scoring.passRunning = true;
   try {
     const revision = ingestedRevision();
     const influencers = readRecords().influencers;
@@ -1126,17 +1148,17 @@ async function runScoringPass(now: Date): Promise<void> {
     // every creator — in which a request still found null and took the cold
     // branch, which is how a restart still cost 28s with incremental
     // publishing in place.
-    summariesCache ??= { revision, computedAt: Date.now(), complete: false, list: [] };
+    scoring.summaries ??= { revision, computedAt: Date.now(), complete: false, list: [] };
 
     const buckets: CohortBuckets = new Map();
     await sliced(influencers, (raw) => bucketCohort(buckets, raw, now));
-    cohortCache = { revision, map: finishCohorts(buckets) };
+    scoring.cohorts = { revision, map: finishCohorts(buckets) };
 
     const list: InfluencerSummary[] = [];
     // A fresh array each time: `databaseStats` caches on the list's identity,
     // so publishing the same growing array would pin its first reading.
     const publish = (complete: boolean) => {
-      summariesCache = { revision, computedAt: Date.now(), complete, list: [...list] };
+      scoring.summaries = { revision, computedAt: Date.now(), complete, list: [...list] };
     };
     await sliced(
       influencers,
@@ -1147,42 +1169,42 @@ async function runScoringPass(now: Date): Promise<void> {
       },
       () => publish(false),
     );
-    summariesCache = { revision, computedAt: Date.now(), complete: true, list };
+    scoring.summaries = { revision, computedAt: Date.now(), complete: true, list };
   } finally {
-    passRunning = false;
+    scoring.passRunning = false;
   }
 }
 
 export function allSummaries(now: Date = new Date()): InfluencerSummary[] {
   const revision = ingestedRevision();
-  const age = summariesCache ? Date.now() - summariesCache.computedAt : Infinity;
+  const age = scoring.summaries ? Date.now() - scoring.summaries.computedAt : Infinity;
   const stale =
-    !summariesCache ||
-    !summariesCache.complete ||
-    (summariesCache.revision !== revision && age > PASS_MIN_INTERVAL_MS) ||
+    !scoring.summaries ||
+    !scoring.summaries.complete ||
+    (scoring.summaries.revision !== revision && age > PASS_MIN_INTERVAL_MS) ||
     age > SUMMARIES_MAX_AGE_MS;
 
-  if (summariesCache) {
-    if (stale && !passRunning) {
+  if (scoring.summaries) {
+    if (stale && !scoring.passRunning) {
       void runScoringPass(now).catch((error: unknown) => {
         console.error(`[scoring] background pass failed: ${String(error)}`);
       });
     }
-    return summariesCache.list;
+    return scoring.summaries.list;
   }
 
   // A pass is already building the list, so wait for it rather than scoring
   // the whole roster again on this request thread. The invariant the cold
   // branch below depends on: a synchronous pass only ever runs when no other
   // pass is in flight.
-  if (passRunning) return [];
+  if (scoring.passRunning) return [];
 
   // Cold process and nothing warmed it: score synchronously, once.
   const list = readRecords()
     .influencers.filter((raw) => raw.status === "published")
     .map((raw) => toSummary(raw.id, now))
     .filter((summary): summary is InfluencerSummary => summary !== null);
-  summariesCache = { revision, computedAt: now.getTime(), complete: true, list };
+  scoring.summaries = { revision, computedAt: now.getTime(), complete: true, list };
   return list;
 }
 
@@ -1190,7 +1212,7 @@ export function allSummaries(now: Date = new Date()): InfluencerSummary[] {
 export async function warmSummaries(): Promise<void> {
   const started = Date.now();
   await runScoringPass(new Date());
-  console.log(`[scoring] scored ${summariesCache?.list.length ?? 0} creators in ${Date.now() - started}ms`);
+  console.log(`[scoring] scored ${scoring.summaries?.list.length ?? 0} creators in ${Date.now() - started}ms`);
 }
 
 export function countInfluencers(): number {

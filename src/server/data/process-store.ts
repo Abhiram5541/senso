@@ -7,8 +7,11 @@
  * renders next. Anchoring the state on `globalThis` gives every bundle — and
  * every hot reload — the same object.
  *
- * This exists only because the development driver keeps state in memory. The
- * Postgres driver has a real database and deletes this file with it.
+ * The development driver's records live here for that reason. So do the
+ * scoring caches (`senso.scoring`), which are derived rather than stored and
+ * so are duplicated per graph under either driver: before they were anchored,
+ * the boot scoring pass warmed one graph while page renders took the whole
+ * pass again in another.
  * ------------------------------------------------------------------------ */
 
 const REGISTRY = Symbol.for("socialorbit.dev.store");
