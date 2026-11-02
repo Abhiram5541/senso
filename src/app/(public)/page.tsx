@@ -74,7 +74,14 @@ function readLive() {
 function liveSnapshot(): LandingSnapshot {
   if (liveCache && Date.now() - liveCache.at < LIVE_TTL_MS) return liveCache.value;
   const value = readLive();
-  if (value.stats.totalInfluencers > 0) liveCache = { at: Date.now(), value };
+  // `totalInfluencers` counts raw rows, which are loaded before the first
+  // request, so it is non-zero even while the scoring pass is still running —
+  // it cannot tell a warm process from a warming one. No rows can: they come
+  // from scored summaries. Caching a warming read would pin the specimen
+  // fallback for an hour after every deploy.
+  if (value.stats.totalInfluencers > 0 && value.rows.length > 0) {
+    liveCache = { at: Date.now(), value };
+  }
   return value;
 }
 

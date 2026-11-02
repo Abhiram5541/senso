@@ -1121,6 +1121,13 @@ async function runScoringPass(now: Date): Promise<void> {
     const revision = ingestedRevision();
     const influencers = readRecords().influencers;
 
+    // Claim the cache before the cohort pass, not after it. Publishing only
+    // once summaries exist left a several-second window — the cohort pass over
+    // every creator — in which a request still found null and took the cold
+    // branch, which is how a restart still cost 28s with incremental
+    // publishing in place.
+    summariesCache ??= { revision, computedAt: Date.now(), complete: false, list: [] };
+
     const buckets: CohortBuckets = new Map();
     await sliced(influencers, (raw) => bucketCohort(buckets, raw, now));
     cohortCache = { revision, map: finishCohorts(buckets) };
@@ -1131,11 +1138,6 @@ async function runScoringPass(now: Date): Promise<void> {
     const publish = (complete: boolean) => {
       summariesCache = { revision, computedAt: Date.now(), complete, list: [...list] };
     };
-    // Present before the first summary, so a request landing between the
-    // cohort pass and the first slice finds a cache rather than the cold
-    // branch. The headline coverage figures come from `countInfluencers`, not
-    // from this list, so a short list does not understate the database.
-    publish(false);
     await sliced(
       influencers,
       (raw) => {
@@ -1168,6 +1170,12 @@ export function allSummaries(now: Date = new Date()): InfluencerSummary[] {
     }
     return summariesCache.list;
   }
+
+  // A pass is already building the list, so wait for it rather than scoring
+  // the whole roster again on this request thread. The invariant the cold
+  // branch below depends on: a synchronous pass only ever runs when no other
+  // pass is in flight.
+  if (passRunning) return [];
 
   // Cold process and nothing warmed it: score synchronously, once.
   const list = readRecords()
