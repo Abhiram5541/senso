@@ -29,6 +29,40 @@
       ],
       "port": 3002,
       "autoPort": false
+    },
+    {
+      "name": "senso-slim-postgres",
+      "runtimeExecutable": "env",
+      "runtimeArgs": [
+        "SOCIALORBIT_DATA_DRIVER=postgres",
+        "SENSO_SLIM_CONTENT=true",
+        "SOCIALORBIT_DAILY_JOBS=false",
+        "npm",
+        "run",
+        "start",
+        "--",
+        "-p",
+        "3003"
+      ],
+      "port": 3003,
+      "autoPort": false
+    },
+    {
+      "name": "senso-full-postgres",
+      "runtimeExecutable": "env",
+      "runtimeArgs": [
+        "SOCIALORBIT_DATA_DRIVER=postgres",
+        "SENSO_SLIM_CONTENT=false",
+        "SOCIALORBIT_DAILY_JOBS=false",
+        "npm",
+        "run",
+        "start",
+        "--",
+        "-p",
+        "3014"
+      ],
+      "port": 3014,
+      "autoPort": false
     }
   ]
 }
