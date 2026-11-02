@@ -34,6 +34,13 @@ const cursorFile = `${file}.cursor`;
 const from = args.includes("--from")
   ? Number(args[args.indexOf("--from") + 1]) || 0
   : Number(existsSync(cursorFile) ? readFileSync(cursorFile, "utf8") : 0) || 0;
+/*
+ * A cap on seeds, not on iterations. It used to bound the loop counter, which
+ * advances by BATCH, so `--limit 10` against Instagram's batch of 50 sent 50
+ * accounts and the hourly cron's `--limit 150` meant three batches rather
+ * than 150 seeds. Rounded up to whole batches, because a batch is the unit
+ * the ingest routes take.
+ */
 const limit = args.includes("--limit") ? Number(args[args.indexOf("--limit") + 1]) || Infinity : Infinity;
 const platform = args.includes("--platform") ? args[args.indexOf("--platform") + 1] : "youtube";
 const BATCH = platform === "instagram" ? 50 : 100;
@@ -69,9 +76,10 @@ if (from >= seeds.length) {
   process.exit(0);
 }
 
-for (let i = from; i < Math.min(seeds.length, from + limit); i += BATCH) {
+const last = Math.min(seeds.length, from + limit);
+for (let i = from; i < last; i += BATCH) {
   const started = Date.now();
-  const slice = seeds.slice(i, i + BATCH);
+  const slice = seeds.slice(i, Math.min(i + BATCH, last));
   const response = await fetch(
     `${APP_URL}/api/internal/connectors/${platform === "instagram" ? "instagram/ingest" : "youtube/harvest"}`,
     {
