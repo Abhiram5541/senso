@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getHeapStatistics } from "node:v8";
 import { readRecords } from "@/server/data/records";
 
 /**
@@ -21,16 +22,22 @@ export function GET() {
   // is what the record set actually costs, and it is the number to watch when
   // judging whether a change to what is resident did anything.
   const heapMb = Math.round(usage.heapUsed / 1048576);
-  const heapLimitMb = Math.round(
-    (process.availableMemory?.() ?? 0) / 1048576,
-  );
+  // The V8 ceiling (`--max-old-space-size`), which is what `heapMb` is racing
+  // towards. It used to report `process.availableMemory()` under the name
+  // `heapHeadroomMb`, which is free memory the OS will give this process —
+  // a number that moves when the box's *other* sites allocate, and that read
+  // ~3.5 GB on a process capped at 1 GB. Two different quantities under one
+  // misleading name; both are useful, so both are now reported and named.
+  const heapLimitMb = Math.round(getHeapStatistics().heap_size_limit / 1048576);
+  const availableMb = Math.round((process.availableMemory?.() ?? 0) / 1048576);
   return NextResponse.json(
     {
       ok,
       creators,
       memoryMb,
       heapMb,
-      heapHeadroomMb: heapLimitMb || undefined,
+      heapLimitMb: heapLimitMb || undefined,
+      availableMb: availableMb || undefined,
       slimContent: process.env.SENSO_SLIM_CONTENT === "true",
       uptimeSeconds: Math.round(process.uptime()),
     },
