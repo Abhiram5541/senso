@@ -12,11 +12,12 @@ import {
   ingestedRecords,
   upsertAccounts,
   upsertIngested,
+  upsertSnapshots,
   upsertViewHistory,
   type IngestedRecord,
 } from "@/server/data/ingested-store";
 import { ConnectorUnavailable as InstagramUnavailable } from "@/server/connectors/instagram";
-import { readRecords, type RawAccount } from "@/server/data/records";
+import { readRecords, type RawAccount, type RawSnapshot } from "@/server/data/records";
 import { IngestionRefused, buildRecord, ingestInstagramAccount } from "./ingestion-service";
 
 /* ---------------------------------------------------------------------------
@@ -407,6 +408,118 @@ export interface StaleRefreshReport extends HarvestReport {
  * missed tonight is at the front of the queue tomorrow, so coverage evens out
  * without anyone tracking a cursor.
  */
+export interface SnapshotPassReport {
+  /** Accounts holding no reading for today when the pass started. */
+  due: number;
+  written: number;
+  /** Channels the platform no longer returns, now marked unavailable. */
+  vanished: number;
+  /** Subscriber count hidden by the channel, so there is no figure to record. */
+  withheld: number;
+  quotaUnitsSpent: number;
+  stoppedEarly: string | null;
+}
+
+/**
+ * A growth reading for every account that has none for today, at one quota
+ * unit per fifty accounts.
+ *
+ * This exists because `refreshStale` below was paying about a hundred times
+ * the price of the thing a snapshot actually is. Its own accounting says so:
+ * one unit per fifty channels for the statistics, then two units *per
+ * channel* to re-read fifty uploads. A snapshot row holds followers, views
+ * and contentCount — every one of them already in the `channels.list`
+ * response that the cheap half fetched. So the uploads read, which exists to
+ * refresh the content table, was rationing the growth history along with it:
+ * the whole roster costs ~230 units here against ~23,000 there, and a
+ * 10,000-unit day therefore reached barely half the accounts.
+ *
+ * Deliberately NOT written through `upsertIngested`. That replaces a
+ * creator's content wholesale (`deleteOwners`), so a record carrying no
+ * videos would delete every post the creator has. This writes snapshot rows
+ * and nothing else.
+ *
+ * It leaves `lastSyncedAt` alone too, which is what `refreshStale` keys its
+ * own staleness on: touching it here would mark every account fresh and the
+ * content pass would never run again.
+ */
+export async function snapshotStale(
+  options: { budgetMs?: number; maxAccounts?: number } = {},
+): Promise<SnapshotPassReport> {
+  const budgetMs = options.budgetMs ?? 5 * 60_000;
+  const maxAccounts = options.maxAccounts ?? 50_000;
+  const startedAt = Date.now();
+  const report: SnapshotPassReport = {
+    due: 0,
+    written: 0,
+    vanished: 0,
+    withheld: 0,
+    quotaUnitsSpent: 0,
+    stoppedEarly: null,
+  };
+
+  // The data says who is due: one snapshot per account per day already, so an
+  // account with today's row needs nothing and no extra field has to track it.
+  const day = new Date().toISOString().slice(0, 10);
+  const held = new Set(
+    ingestedRecords()
+      .snapshots.filter((point) => point.date === day)
+      .map((point) => point.accountId),
+  );
+  const due = refreshableAccounts()
+    .filter((account) => !account.unavailableSince && !held.has(account.id))
+    .sort((a, b) => a.lastSyncedAt.localeCompare(b.lastSyncedAt));
+  report.due = due.length;
+
+  const byChannel = new Map(due.map((account) => [account.platformAccountId, account]));
+  const batch = due.slice(0, maxAccounts);
+
+  try {
+    for (let i = 0; i < batch.length; i += 50) {
+      if (Date.now() - startedAt > budgetMs) {
+        report.stoppedEarly = `Time budget of ${budgetMs}ms reached.`;
+        break;
+      }
+      const ids = batch.slice(i, i + 50).map((account) => account.platformAccountId);
+      const channels = await fetchChannels(ids);
+      report.quotaUnitsSpent += Math.ceil(ids.length / 50);
+
+      const returned = new Set(channels.map((channel) => channel.channelId));
+      const vanished = ids.filter((id) => !returned.has(id));
+      if (vanished.length > 0) {
+        await markUnavailable(vanished);
+        report.vanished += vanished.length;
+      }
+
+      const points: RawSnapshot[] = [];
+      for (const channel of channels) {
+        const account = byChannel.get(channel.channelId);
+        if (!account) continue;
+        // A hidden subscriber count is absent, not zero (D13). A point with a
+        // fabricated follower figure would corrupt the growth series it joins.
+        if (channel.subscribers === null) {
+          report.withheld += 1;
+          continue;
+        }
+        points.push({
+          accountId: account.id,
+          date: day,
+          followers: channel.subscribers,
+          views: channel.totalViews,
+          contentCount: channel.videoCount ?? account.contentCount,
+        });
+      }
+      await upsertSnapshots(points);
+      report.written += points.length;
+    }
+  } catch (error) {
+    if (error instanceof ConnectorUnavailable) report.stoppedEarly = error.message;
+    else throw error;
+  }
+
+  return report;
+}
+
 export async function refreshStale(
   options: { budgetMs?: number; maxChannels?: number; videosPerChannel?: number } = {},
 ): Promise<StaleRefreshReport> {

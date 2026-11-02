@@ -11,6 +11,7 @@ import {
   harvest,
   refreshInstagramStale,
   refreshStale,
+  snapshotStale,
   type DiscoveryQuery,
   type HarvestReport,
   type StaleRefreshReport,
@@ -101,6 +102,13 @@ export async function runSnapshotJob(
   const day = today(now);
   if ((await lastRun("snapshot"))?.ranOn === day) return null;
 
+  // Growth history first, and for every account, because it is ~1 unit per
+  // fifty (snapshotStale explains why) — the whole roster is a rounding error
+  // against the daily quota. What the quota actually rations is the content
+  // pass below at ~2 units an account, and it had been rationing the snapshots
+  // along with it, reaching about half the roster a day.
+  const snapshots = await snapshotStale();
+
   const maxChannels = options.maxChannels ?? 5_000;
   const report = await refreshStale({ budgetMs: options.budgetMs ?? 40 * 60_000, maxChannels });
 
@@ -111,7 +119,11 @@ export async function runSnapshotJob(
   const instagram = process.env.META_IG_TOKEN ? await refreshInstagramStale() : null;
 
   await sendOpsEvent("Daily snapshot", [
-    `${report.ingested} creators refreshed, ${report.quotaUnitsSpent} quota units spent.`,
+    `Growth readings: ${snapshots.written} of ${snapshots.due} due, ${snapshots.quotaUnitsSpent} quota units spent.`,
+    ...(snapshots.withheld > 0 ? [`${snapshots.withheld} withheld a subscriber count.`] : []),
+    ...(snapshots.vanished > 0 ? [`${snapshots.vanished} no longer returned by the platform.`] : []),
+    ...(snapshots.stoppedEarly ? [`Growth pass stopped early: ${snapshots.stoppedEarly}`] : []),
+    `Content refreshed on ${report.ingested} creators, ${report.quotaUnitsSpent} quota units spent.`,
     ...(instagram ? [`Instagram: ${instagram.ingested} refreshed, ${instagram.remaining} still due.`] : []),
     report.remaining > 0
       ? `${report.remaining} still carrying an older reading.`
