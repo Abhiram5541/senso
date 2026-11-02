@@ -25,6 +25,12 @@ module.exports = {
     app("senso", "/home/senso/htdocs/srv1082984.hstgr.cloud", 3005, 4096),
     // Staging: same box, its own database (senso_staging), no daily jobs, no
     // outbound mail. Deployed with SENSO_TARGET=staging scripts/deploy-vps.sh.
-    app("senso-staging", "/home/senso-staging/htdocs/staging.srv1082984.hstgr.cloud", 3015, 2048),
+    // 1 GB, not 2: staging holds 8,678 creators at ~960 MB resident and is
+    // idle between deploys, while it shares 7.9 GB of RAM with production's
+    // 4 GB heap and the box's other sites. Measured at 1,484 MB free with
+    // 2.8 GB already in swap, a staging heap that may grow to 2 GB is a
+    // production stall waiting to happen. Raise it only if a restore of a
+    // larger database needs it.
+    app("senso-staging", "/home/senso-staging/htdocs/staging.srv1082984.hstgr.cloud", 3015, 1024),
   ],
 };
