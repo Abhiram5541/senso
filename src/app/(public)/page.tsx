@@ -26,8 +26,22 @@ export const metadata: Metadata = {
     "Find the creators worth betting your brand on. Discovery, evaluation, verification and campaign measurement for marketing teams — with evidence behind every important number.",
 };
 
-// The proof bar reads the live database, so the page cannot be prerendered.
-export const dynamic = "force-dynamic";
+// The proof bar reads the live database, which `force-dynamic` took to mean
+// the page may never be cached — so every visitor paid for the scatter, the
+// facet counts, the stats and a full hero profile. At 12.6k creators on the
+// production box that is seven seconds of event loop per request, and the
+// loop is shared, so a click on any other route queued behind it.
+//
+// It prerenders at build time instead, because the build loads the record set
+// (`instrumentation.ts`) and so renders the real figures, not an empty state.
+//
+// The database moves on a daily cadence (D30's two jobs), so the page is
+// rendered once an hour and served from the cache in between. The window is an
+// hour rather than a few minutes because the render still costs seconds of
+// event loop when it happens, and this process is the whole server: every
+// regeneration is a stall for whoever is using the application at the time.
+// Being an hour behind a once-a-day harvest is invisible; the stall is not.
+export const revalidate = 3600;
 
 /* ---------------------------------------------------------------------------
  * The landing page.
