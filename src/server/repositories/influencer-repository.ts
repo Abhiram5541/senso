@@ -1209,6 +1209,19 @@ export function allSummaries(now: Date = new Date()): InfluencerSummary[] {
 }
 
 /** Takes the first pass at boot, chunked, so the first request finds a list waiting. */
+/**
+ * Whether the last scoring pass finished.
+ *
+ * A caller that caches a derived view needs this: during warm-up
+ * `allSummaries` returns a growing subset, so a view built from it is honest
+ * but incomplete, and caching one pins the incomplete version. The landing
+ * page's hour-long memo was doing exactly that — a quality scatter with 111
+ * occupied cells instead of 638.
+ */
+export function summariesComplete(): boolean {
+  return scoring.summaries?.complete ?? false;
+}
+
 export async function warmSummaries(): Promise<void> {
   const started = Date.now();
   await runScoringPass(new Date());

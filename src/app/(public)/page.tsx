@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { ArrowRight } from "lucide-react";
 import { formatCompact } from "@/lib/format";
 import { databaseStats } from "@/server/repositories/ops-repository";
+import { summariesComplete } from "@/server/repositories/influencer-repository";
 import { LinkButton } from "@/components/ui/button";
 import { MarketingChrome } from "@/components/shell/marketing-chrome";
 import { CountUp } from "@/components/marketing/count-up";
@@ -74,12 +75,12 @@ function readLive() {
 function liveSnapshot(): LandingSnapshot {
   if (liveCache && Date.now() - liveCache.at < LIVE_TTL_MS) return liveCache.value;
   const value = readLive();
-  // `totalInfluencers` counts raw rows, which are loaded before the first
-  // request, so it is non-zero even while the scoring pass is still running —
-  // it cannot tell a warm process from a warming one. No rows can: they come
-  // from scored summaries. Caching a warming read would pin the specimen
-  // fallback for an hour after every deploy.
-  if (value.stats.totalInfluencers > 0 && value.rows.length > 0) {
+  // Only a complete read is worth keeping for an hour. During warm-up
+  // `allSummaries` returns a growing subset, so the facets and the scatter are
+  // honest but partial — caching one pinned a scatter of 111 cells where the
+  // finished pass gives 638. Row counts cannot detect that: the hero appears
+  // as soon as anything is scored.
+  if (value.stats.totalInfluencers > 0 && value.rows.length > 0 && summariesComplete()) {
     liveCache = { at: Date.now(), value };
   }
   return value;
