@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastScanned": 1792647337073,
+  "lastScanned": 1793594032714,
   "projectRoot": "/Users/abhiram/Downloads/senso",
   "techStack": {
     "languages": [
@@ -97,7 +97,7 @@
       "path": "docs",
       "purpose": "Documentation",
       "fileCount": 11,
-      "lastAccessed": 1792647337048,
+      "lastAccessed": 1793594032697,
       "keyFiles": [
         "API_COSTS_AND_INFRASTRUCTURE_BUDGET.md",
         "DATA_COVERAGE.md",
@@ -110,7 +110,7 @@
       "path": "e2e",
       "purpose": null,
       "fileCount": 9,
-      "lastAccessed": 1792647337052,
+      "lastAccessed": 1793594032697,
       "keyFiles": [
         "auth.spec.ts",
         "discovery.spec.ts",
@@ -123,14 +123,14 @@
       "path": "public",
       "purpose": "Public files",
       "fileCount": 0,
-      "lastAccessed": 1792647337054,
+      "lastAccessed": 1793594032700,
       "keyFiles": []
     },
     "scripts": {
       "path": "scripts",
       "purpose": "Build/utility scripts",
       "fileCount": 11,
-      "lastAccessed": 1792647337054,
+      "lastAccessed": 1793594032700,
       "keyFiles": [
         "backfill-mentions.mjs",
         "content-parity.mjs",
@@ -143,7 +143,7 @@
       "path": "src",
       "purpose": "Source code",
       "fileCount": 1,
-      "lastAccessed": 1792647337055,
+      "lastAccessed": 1793594032701,
       "keyFiles": [
         "instrumentation.ts"
       ]
@@ -152,7 +152,7 @@
       "path": "test-results",
       "purpose": null,
       "fileCount": 3,
-      "lastAccessed": 1792647337055,
+      "lastAccessed": 1793594032701,
       "keyFiles": [
         "control-audit.json",
         "ui-audit.json"
@@ -162,7 +162,7 @@
       "path": "e2e/fixtures",
       "purpose": "Test fixtures",
       "fileCount": 1,
-      "lastAccessed": 1792647337056,
+      "lastAccessed": 1793594032701,
       "keyFiles": [
         "ingested.json.gz"
       ]
@@ -171,7 +171,7 @@
       "path": "src/app",
       "purpose": "Application code",
       "fileCount": 5,
-      "lastAccessed": 1792647337056,
+      "lastAccessed": 1793594032702,
       "keyFiles": [
         "apple-icon.png",
         "globals.css",
@@ -182,7 +182,7 @@
       "path": "src/components",
       "purpose": "UI components",
       "fileCount": 1,
-      "lastAccessed": 1792647337057,
+      "lastAccessed": 1793594032702,
       "keyFiles": [
         "query-provider.tsx"
       ]
@@ -191,7 +191,7 @@
       "path": "src/lib",
       "purpose": "Library code",
       "fileCount": 3,
-      "lastAccessed": 1792647337057,
+      "lastAccessed": 1793594032702,
       "keyFiles": [
         "class-names.ts",
         "format.ts",
@@ -199,6 +199,13 @@
       ]
     }
   },
-  "hotPaths": [],
+  "hotPaths": [
+    {
+      "path": "src/app/(public)/page.tsx",
+      "accessCount": 3,
+      "lastAccessed": 1793595456524,
+      "type": "file"
+    }
+  ],
   "userDirectives": []
 }
