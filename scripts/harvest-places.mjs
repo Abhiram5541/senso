@@ -13,7 +13,7 @@ import { readFileSync } from "node:fs";
  * Usage: node scripts/harvest-places.mjs [--top] [--from N]
  *   --top   the view-count-ranked plan: the biggest channels that keep making
  *           content about the place. A second pass, not a first.
- * Needs the dev server on APP_URL and the seed admin password in .env.local.
+ * Needs the dev server on APP_URL and CRON_SECRET in .env.local.
  */
 
 const env = Object.fromEntries(
@@ -25,20 +25,25 @@ const env = Object.fromEntries(
 const APP_URL = env.APP_URL ?? "http://localhost:3000";
 const plan = process.argv.includes("--top") ? "top" : "places";
 
-async function login() {
-  const response = await fetch(`${APP_URL}/api/internal/auth/login`, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ email: "admin@senso360.com", password: env.DEV_SEED_PASSWORD }),
-  });
-  if (!response.ok) throw new Error(`login failed: ${response.status} ${await response.text()}`);
-  const cookie = response.headers.get("set-cookie");
-  if (!cookie) throw new Error("login set no cookie");
-  return cookie.split(";")[0];
+/*
+ * Unattended, so it authenticates as a scheduler rather than as a person:
+ * the ingestion routes take the cron secret as an alternative to an operator
+ * session. This used to sign in as admin@senso360.com with
+ * DEV_SEED_PASSWORD, which is the variable that also decides whether to
+ * create the seeded accounts at all — correctly unset in production, so every
+ * run died on `422 password: expected string, received undefined`.
+ */
+const CRON_SECRET = (process.env.CRON_SECRET ?? env.CRON_SECRET ?? "").trim();
+if (!CRON_SECRET) {
+  console.error("CRON_SECRET is not set in .env.local; the ingestion routes will refuse this run.");
+  process.exit(1);
 }
+const authHeaders = {
+  "content-type": "application/json",
+  authorization: `Bearer ${CRON_SECRET}`,
+};
 
 const from = Number(process.argv[process.argv.indexOf("--from") + 1] || 0) || 0;
-const cookie = await login();
 let ingested = 0;
 let spent = 0;
 
@@ -46,7 +51,7 @@ for (let i = from; ; i += 1) {
   const started = Date.now();
   const response = await fetch(`${APP_URL}/api/internal/connectors/youtube/harvest`, {
     method: "POST",
-    headers: { "content-type": "application/json", cookie },
+    headers: authHeaders,
     body: JSON.stringify({ plan, offset: i, limit: 1, target: 200, videos: 50 }),
   });
   const report = await response.json();

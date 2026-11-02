@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 import { Category } from "@/lib/contracts/common";
 import { ApiFailure, handler, requirePermission } from "@/server/auth/rbac";
+import { hasCronSecret } from "@/server/auth/cron";
 import { PLANS } from "@/server/services/discovery-plan";
 import {
   HARVEST_CATEGORIES,
@@ -53,7 +54,9 @@ export async function POST(request: NextRequest) {
   // The three modes return different report shapes, so the handler is widened
   // rather than each branch pretending to be the other.
   return handler<unknown>(async () => {
-    await requirePermission("admin:ingestion");
+    // Either an operator in the admin workspace, or an unattended import
+    // carrying the cron secret (scripts/import-seeds.mjs).
+    if (!hasCronSecret(request)) await requirePermission("admin:ingestion");
 
     const parsed = Body.safeParse(await request.json().catch(() => ({})));
     if (!parsed.success) {

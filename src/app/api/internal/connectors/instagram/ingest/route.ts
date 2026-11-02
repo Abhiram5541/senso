@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 import { ApiFailure, handler, requirePermission } from "@/server/auth/rbac";
+import { hasCronSecret } from "@/server/auth/cron";
 import { ConnectorUnavailable } from "@/server/connectors/instagram";
 import { IngestionRefused, ingestInstagramAccount } from "@/server/services/ingestion-service";
 
@@ -30,7 +31,9 @@ export interface InstagramIngestOutcome {
  */
 export async function POST(request: NextRequest) {
   return handler(async () => {
-    await requirePermission("admin:ingestion");
+    // Either an operator in the admin workspace, or an unattended import
+    // carrying the cron secret (scripts/import-seeds.mjs).
+    if (!hasCronSecret(request)) await requirePermission("admin:ingestion");
 
     const parsed = Body.safeParse(await request.json().catch(() => null));
     if (!parsed.success) {
