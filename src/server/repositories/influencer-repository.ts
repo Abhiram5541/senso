@@ -1151,6 +1151,19 @@ export function countInfluencers(): number {
   return readRecords().influencers.length;
 }
 
+/**
+ * The stored name, by map lookup, with nothing scored or assembled.
+ *
+ * It exists for `generateMetadata`, which needs a page title and nothing
+ * else. Next runs that before — and regardless of — the layout's session
+ * check, so building a whole profile there cost every anonymous request about
+ * two seconds on the way to a redirect it was always going to get, and made a
+ * signed-in profile view assemble the same creator twice.
+ */
+export function displayNameOf(id: string): string | null {
+  return index().influencers.get(id)?.displayName ?? null;
+}
+
 export function platformsOf(id: string): Platform[] {
   return readRecords()
     .accounts.filter((account) => account.influencerId === id)

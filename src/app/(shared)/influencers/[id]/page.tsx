@@ -5,7 +5,7 @@ import { discoveryHomeFor } from "@/lib/navigation";
 import { can, requirePagePermission } from "@/server/auth/rbac";
 import { sentimentBlockedReason, sentimentFor } from "@/server/services/sentiment-service";
 import { visualBlockedReason, visualFor } from "@/server/services/visual-service";
-import { toProfile } from "@/server/repositories/influencer-repository";
+import { displayNameOf, toProfile } from "@/server/repositories/influencer-repository";
 import { PageBody, PageHeader } from "@/components/shell/app-shell";
 import { CalendarDays } from "lucide-react";
 import { Freshness } from "@/components/intelligence/provenance";
@@ -32,8 +32,8 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const profile = toProfile(id);
-  return { title: profile ? profile.displayName : "Influencer not found" };
+  const name = displayNameOf(id);
+  return { title: name ?? "Influencer not found" };
 }
 
 export default async function InfluencerProfilePage({
