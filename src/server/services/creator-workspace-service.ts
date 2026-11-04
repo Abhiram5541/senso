@@ -1,5 +1,6 @@
 import type { Contract, Payment } from "@/lib/contracts/deal";
 import type { Submission } from "@/lib/contracts/campaign-workflow";
+import { sumMoney } from "@/lib/money";
 import { appRows } from "@/server/data/app-store";
 import { campaignsForCreator } from "@/server/repositories/workspace-repository";
 
@@ -92,9 +93,14 @@ export function creatorAnalytics(influencerId: string): CreatorAnalytics {
   ).length;
 
   const byCurrency = (rows: { currency: string; amount: number }[]) => {
-    const totals = new Map<string, number>();
-    for (const row of rows) totals.set(row.currency, (totals.get(row.currency) ?? 0) + row.amount);
-    return [...totals.entries()].map(([currency, amount]) => ({ currency, amount }));
+    const totals = new Map<string, number[]>();
+    for (const row of rows) totals.set(row.currency, [...(totals.get(row.currency) ?? []), row.amount]);
+    // Summed through `sumMoney` so a creator's earnings total matches the
+    // payments it was added from, to the minor unit.
+    return [...totals.entries()].map(([currency, amounts]) => ({
+      currency,
+      amount: sumMoney(amounts),
+    }));
   };
 
   const payments = campaigns.flatMap((campaign) => campaign.payments);

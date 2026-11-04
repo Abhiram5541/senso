@@ -11,6 +11,7 @@ import type {
   PaymentInput,
   SignInput,
 } from "@/lib/contracts/deal";
+import { roundMoney, sumMoney } from "@/lib/money";
 import { ApiFailure, assertTenantAccess } from "@/server/auth/rbac";
 import { appRows, persist } from "@/server/data/app-store";
 import { noteIfTracked } from "@/server/repositories/crm-repository";
@@ -348,11 +349,10 @@ export function campaignSpend(user: SessionUser, campaignId: string): CampaignSp
     (row) => row.orgId === user.orgId && row.campaignId === campaignId && row.status !== "cancelled",
   );
   const sum = (predicate: (row: PaymentRow) => boolean) =>
-    rows.filter(predicate).reduce((total, row) => total + row.amount, 0);
+    sumMoney(rows.filter(predicate).map((row) => row.amount));
 
-  const committed = campaign.participants.reduce(
-    (total, participant) => total + (participant.agreedRate ?? 0),
-    0,
+  const committed = sumMoney(
+    campaign.participants.map((participant) => participant.agreedRate ?? 0),
   );
   const paid = sum((row) => row.status === "paid");
 
@@ -362,7 +362,8 @@ export function campaignSpend(user: SessionUser, campaignId: string): CampaignSp
     committed,
     approved: sum((row) => row.status === "approved"),
     paid,
-    outstanding: Math.max(0, committed - paid),
+    // Both terms are already exact; the subtraction between them is not.
+    outstanding: roundMoney(Math.max(0, committed - paid)),
   };
 }
 
