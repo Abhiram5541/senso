@@ -14,9 +14,9 @@ import { encode, postgresDriver, appStateQuery } from "./postgres";
  * The write is queued rather than awaited: the repositories are synchronous
  * and sit under synchronous services, and memory — not the database — is
  * what the next request reads. Writes are chained so they land in order, and
- * a failure is logged loudly rather than thrown into a request that already
- * succeeded against memory. ponytail: a crash inside that window loses one
- * write; make the repositories async if that ever matters.
+ * a failure is reported to the ops channel rather than thrown into a request
+ * that already succeeded against memory. ponytail: a crash inside that window
+ * loses one write; make the repositories async if that ever matters.
  * ------------------------------------------------------------------------ */
 
 export type AppKind = "shortlists" | "campaigns" | "api_keys" | "users" | "orgs" | "usage" | "digests" | "crm" | "outreach_templates" | "outreach_messages" | "proposals" | "submissions" | "contract_templates" | "contracts" | "payments" | "rules" | "watchlists" | "applications" | "jobs" | "report_schedules" | "reports" | "brands" | "plan_changes" | "usage_history" | "sentiment" | "listening" | "visual" | "saved_searches";
@@ -33,12 +33,50 @@ export function appRows<T>(kind: AppKind, seed: () => T[]): T[] {
 
 let queue: Promise<void> = Promise.resolve();
 
+/**
+ * A failed write is reported, not just logged.
+ *
+ * The request that caused it already answered successfully against memory, so
+ * nothing surfaces to the person who made it, and the next restart loads the
+ * database without the row — a shortlist, a campaign, an API key or a usage
+ * counter that quietly never existed. `console.error` alone meant that landed
+ * in a PM2 log nobody reads, while an ordinary unhandled request error went
+ * to Slack. The louder failure was the less important one.
+ *
+ * Throttled per label, because the realistic cause is the database being
+ * unreachable, and that fails every queued write at once.
+ */
+const reportedAt = new Map<string, number>();
+const REPORT_EVERY_MS = 10 * 60_000;
+
+function report(label: string, error: unknown): void {
+  const detail = `[app-store] ${label} failed: ${String(error)}`;
+  console.error(detail);
+
+  const last = reportedAt.get(label) ?? 0;
+  if (Date.now() - last < REPORT_EVERY_MS) return;
+  reportedAt.set(label, Date.now());
+  // Bounded: a process failing on many distinct labels has a bigger problem
+  // than this map, but it should not also leak.
+  if (reportedAt.size > 200) reportedAt.clear();
+
+  // Imported late so this module stays free of the service layer, and so a
+  // notification failure can never take the write queue down with it.
+  void import("@/server/services/notification-service")
+    .then(({ sendSlack }) =>
+      sendSlack(
+        `:floppy_disk: *SENSO workspace write failed* — the request already succeeded against memory, so this row is in no database.\n\`\`\`${detail}\`\`\``,
+      ),
+    )
+    .catch(() => undefined);
+}
+
 function enqueue(label: string, work: () => Promise<unknown>): void {
   queue = queue
     .then(work)
     .then(() => undefined)
     .catch((error: unknown) => {
-      console.error(`[app-store] ${label} failed: ${String(error)}`);
+      report(label, error);
     });
 }
 
