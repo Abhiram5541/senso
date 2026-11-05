@@ -3,6 +3,7 @@ import { ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/class-names";
 import { Wordmark } from "@/components/shell/logo";
 import { LinkButton } from "@/components/ui/button";
+import { MarketingMenu } from "@/components/marketing/marketing-menu";
 
 /*
  * The homepage is written for marketers, agencies and the people who sign the
@@ -26,12 +27,16 @@ const NAV = [
 export function MarketingChrome({
   children,
   onDark = false,
+  className,
+  landing = false,
 }: {
   children: React.ReactNode;
   onDark?: boolean;
+  className?: string;
+  landing?: boolean;
 }) {
   return (
-    <div className={cn("flex min-h-dvh flex-col", onDark && "bg-instrument")}>
+    <div className={cn("flex min-h-dvh flex-col", onDark && "bg-instrument", className)}>
       <a
         href="#main"
         className="sr-only-focusable absolute left-3 top-3 z-50 rounded-md bg-brand px-3 py-2 text-base font-semibold text-white"
@@ -49,10 +54,10 @@ export function MarketingChrome({
       >
         <div className="mx-auto flex h-16 max-w-6xl items-center gap-7 px-4 sm:px-6">
           <Link href="/" className="rounded" aria-label="SENSO home">
-            <Wordmark
+            {landing ? <span className="flex items-center gap-2 text-xl font-semibold tracking-tight"><span className="font-display">SENSO<span className="font-normal opacity-70">360</span></span></span> : <Wordmark
               inverse={onDark}
               className="[&_.label-caps-sm]:hidden sm:[&_.label-caps-sm]:block"
-            />
+            />}
           </Link>
           {/* From lg: at 768px the wordmark, four links and two actions need
               more than the row has once Linux font metrics widen the text
@@ -94,10 +99,11 @@ export function MarketingChrome({
               size="sm"
               className="gap-1.5"
             >
-              Request a demo
+              {landing ? "Start free" : "Request a demo"}
               <ArrowUpRight className="size-3.5" aria-hidden />
             </LinkButton>
           </div>
+          {landing && <MarketingMenu links={NAV} />}
         </div>
       </header>
 
@@ -111,7 +117,7 @@ export function MarketingChrome({
       <footer className="border-t border-line bg-surface text-ink">
         <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-12 sm:px-6 md:flex-row md:items-start md:justify-between">
           <div className="space-y-3">
-            <Wordmark />
+            {landing ? <span className="font-display text-xl font-semibold">SENSO<span className="font-normal opacity-70">360</span></span> : <Wordmark />}
             <p className="max-w-xs text-sm text-ink-muted">
               Influencer intelligence built on official platform APIs, authorized creator
               connections and permitted public research.
@@ -132,7 +138,7 @@ export function MarketingChrome({
               links={[
                 { href: "/pricing", label: "Pricing" },
                 { href: "/login", label: "Sign in" },
-                { href: "/register", label: "Request a demo" },
+                { href: "/register", label: landing ? "Start free" : "Request a demo" },
               ]}
             />
           </div>
@@ -141,8 +147,7 @@ export function MarketingChrome({
           <p className="mx-auto max-w-6xl px-4 py-4 text-sm text-ink-subtle sm:px-6">
             © {new Date().getFullYear()} SENSO. Data is collected from official platform
             APIs and authorized connections. Estimated and AI-inferred values are labelled as
-            such throughout the product. Creators shown in marketing interfaces are
-            illustrative; coverage figures are read live from the database.
+            such throughout the product. {landing ? "Creator profiles and coverage use the live database when available; illustrative fallbacks are labelled. Campaign and AI examples are illustrative." : "Creators shown in marketing interfaces are illustrative; coverage figures are read live from the database."}
           </p>
         </div>
       </footer>

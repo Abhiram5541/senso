@@ -1,0 +1,58 @@
+# Recognisable creators for the landing page's showcase.
+#
+# The database grows from the daily discovery rotation (D50), which sweeps
+# Telangana and Andhra Pradesh — so it holds thousands of genuine regional
+# creators and none of the names a marketing director recognises on sight. The
+# landing page is the one surface where that matters: a shop window of channels
+# nobody has heard of reads as a thin database, whatever its real size.
+#
+# Handles cost 1 quota unit each to resolve and ~2 to read, so this whole list
+# is roughly 120 units against the 10,000/day budget.
+#
+# Channels whose only category is `music` are ingested but will not reach the
+# landing showcase: `SHOWCASE` in src/components/marketing/live.ts does not
+# include it. They are here because they belong in the database regardless.
+
+# --- Global, by audience ---
+@MrBeast
+@tseries
+@CoComelon
+@SETIndia
+@KidsDianaShow
+@VladandNiki
+@LikeNastyaofficial
+@ZeeMusicCompany
+@PewDiePie
+@StokesTwins
+@5MinuteCraftsYouTube
+@sonysab
+@justinbieber
+@BLACKPINK
+@HYBELABELS
+@colorstv
+@aajtak
+@TipsOfficial
+@Goldmines
+@MrBeastGaming
+
+# --- India, the launch market ---
+@CarryMinati
+@TechnicalGuruji
+@ashishchanchlanivines
+@BBKiVines
+@TotalGaming093
+@Round2hell
+@SandeepSeminars
+@KhanSirPatnaOfficial
+@AmitBhadana
+@TriggeredInsaan
+@HarshBeniwal
+@NishaMadhulika
+@KabitasKitchen
+@MumbikerNikhil
+@MostlySane
+@FlyingBeast320
+@souravjoshivlogs7028
+@dhruvrathee
+@EmiwayBantai
+@TechBurner

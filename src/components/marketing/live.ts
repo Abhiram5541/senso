@@ -15,9 +15,18 @@ import type { SpecimenCreator } from "./specimen";
  * example (SENSO holds no client's campaign) and the AI extract (enrichment
  * has not run on these creators yet). Both are still disclosed.
  *
- * Selection is deterministic for a given database — highest health among
+ * Selection is deterministic for a given database — the largest audience among
  * creators with a photo, a country, a real audience and a brand-safe
  * category — so the page does not reshuffle between two visits.
+ *
+ * It used to rank by health score, which is the right axis everywhere inside
+ * the product and the wrong one here. Health is normalised within a cohort, so
+ * a well-run 2.5M channel scores above an 82M one, and the landing page opened
+ * on five creators a marketing director has never heard of. A shop window of
+ * unknown names reads as a thin database however large it really is. Ranking by
+ * audience puts the recognisable channels the database genuinely holds on the
+ * first screen; health is still a filter (a creator with no score never
+ * appears) and every figure shown is still the one the application computed.
  * ------------------------------------------------------------------------ */
 
 /** Categories a marketing director expects to see on a first screen. */
@@ -31,7 +40,10 @@ function showcaseWorthy(s: InfluencerSummary): boolean {
     !s.isDemo &&
     s.healthScore !== null &&
     s.avatarUrl !== null &&
-    s.countryName !== null &&
+    // Not merely non-null: a handful of channels carry an empty country, which
+    // passed a null check and then rendered the market column blank — "@handle
+    // ·  · Entertainment", with the gap where a country should be.
+    (s.countryName ?? "").trim() !== "" &&
     (s.followers ?? 0) >= 250_000 &&
     s.categories.some((c) => SHOWCASE.includes(c))
   );
@@ -41,19 +53,20 @@ function showcaseWorthy(s: InfluencerSummary): boolean {
 export function landingCreators(): { hero: InfluencerProfile | null; rows: SpecimenCreator[] } {
   const ranked = allSummaries()
     .filter(showcaseWorthy)
-    .sort((a, b) => (b.healthScore ?? 0) - (a.healthScore ?? 0));
+    .sort((a, b) => (b.followers ?? 0) - (a.followers ?? 0));
 
-  // Indian creators lead — the launch market — then the rest, one per country
-  // so the table reads as a global index rather than one market's chart.
+  // One creator per country, so the table reads as a global index rather than
+  // one market's chart. India is dense enough near the top of the audience
+  // ranking that the launch market reaches the table on its own — it no longer
+  // needs a pass of its own ahead of everyone else, which is what used to put a
+  // smaller Indian channel above the biggest creator in the database.
   const seen = new Set<string>();
   const picked: InfluencerSummary[] = [];
-  for (const pass of [ranked.filter((s) => s.countryCode === "IN"), ranked]) {
-    for (const s of pass) {
-      if (picked.length >= 7) break;
-      if (picked.includes(s) || seen.has(s.countryName!)) continue;
-      seen.add(s.countryName!);
-      picked.push(s);
-    }
+  for (const s of ranked) {
+    if (picked.length >= 7) break;
+    if (seen.has(s.countryName!)) continue;
+    seen.add(s.countryName!);
+    picked.push(s);
   }
 
   const hero = picked[0] ? toProfile(picked[0].id) : null;

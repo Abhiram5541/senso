@@ -295,7 +295,7 @@ export function DiscoverySurface({
         ))}
       </div>
 
-      <div className="scroll-x min-w-0">
+      <div className="scroll-x min-w-0" tabIndex={0} role="region" aria-label="Creator search results">
         <table className="w-full min-w-max border-collapse text-base">
           <thead className="border-b border-rule bg-sunken text-ink-muted">
             <tr>
@@ -837,7 +837,7 @@ export function CampaignDeliveryPanel() {
 export function CampaignLeaderboard() {
   return (
     <SurfaceFrame label="Creator performance" meta="Ranked by campaign score">
-      <div className="scroll-x">
+      <div className="scroll-x" tabIndex={0} role="region" aria-label="Campaign creator performance">
         <table className="w-full min-w-max border-collapse text-base">
           <thead className="border-b border-rule bg-sunken text-ink-muted">
             <tr>
