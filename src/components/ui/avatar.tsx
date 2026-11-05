@@ -44,6 +44,35 @@ function tintOf(name: string): string {
   return TINTS[hash % TINTS.length];
 }
 
+/** Rendered edge of each size, in CSS pixels — the Tailwind class above in px. */
+const PX: Record<keyof typeof SIZES, number> = {
+  xs: 24,
+  sm: 32,
+  md: 40,
+  lg: 56,
+  xl: 80,
+  "2xl": 96,
+};
+
+/*
+ * Google's avatar CDN encodes the requested square in the path (`=s800-c-k-…`),
+ * and the platform hands us whatever size it first wrote — usually 800. Every
+ * creator row was therefore decoding an 800px JPEG into a 32px circle: 135 KB
+ * each, and on the landing page 807 KB of a 1,098 KB page, for sixteen coins no
+ * larger than a thumbnail.
+ *
+ * Asking for twice the rendered edge covers a 2x display exactly and costs
+ * about 10 KB. It is done here rather than at each call site because every
+ * avatar in the product goes through this component, and a size the caller has
+ * to remember to pass is a size that gets forgotten.
+ *
+ * Only a `=s<digits>` segment is rewritten, so a CDN that does not use the
+ * convention — Instagram's, for one — is passed through untouched.
+ */
+export function avatarSrc(src: string, size: keyof typeof SIZES): string {
+  return src.replace(/=s\d+(?=-|$)/, `=s${PX[size] * 2}`);
+}
+
 export function Avatar({
   name,
   src,
@@ -65,7 +94,7 @@ export function Avatar({
         // routing every one of them through the optimiser.
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={src}
+          src={avatarSrc(src, size)}
           alt=""
           loading="lazy"
           decoding="async"
