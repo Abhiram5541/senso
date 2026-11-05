@@ -38,7 +38,9 @@ export function CountUp({
         observer.disconnect();
         const started = performance.now();
         const tick = (now: number) => {
-          const t = Math.min(1, (now - started) / durationMs);
+          // A frame's timestamp is when the frame began, which can precede
+          // `started`; unclamped, the first frame counted below zero.
+          const t = Math.min(1, Math.max(0, (now - started) / durationMs));
           const eased = 1 - Math.pow(1 - t, 3);
           setShown(t < 1 ? formatCompact(Math.round(value * eased)) : text);
           if (t < 1) frame = requestAnimationFrame(tick);

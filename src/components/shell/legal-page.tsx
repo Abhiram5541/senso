@@ -29,7 +29,7 @@ export function LegalPage({
     <MarketingChrome>
       <article className="mx-auto max-w-3xl px-4 py-14 sm:px-6">
         <Eyebrow>{eyebrow}</Eyebrow>
-        <h1 className="display-lg mt-2 text-ink">{title}</h1>
+        <h1 className="display-sm mt-4 text-ink">{title}</h1>
         <p className="mt-3 text-md leading-6 text-ink-muted">{summary}</p>
         <p className="mt-2 text-sm text-ink-subtle">Last updated {updated}</p>
 

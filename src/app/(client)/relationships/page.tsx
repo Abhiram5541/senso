@@ -65,7 +65,7 @@ export default async function RelationshipsPage({
             <Link
               href={href({ stage: undefined })}
               className={`press rounded-full px-3 py-1.5 text-sm font-medium ${
-                parsed === undefined ? "bg-brand text-white" : "bg-sunken text-ink-muted hover:text-ink"
+                parsed === undefined ? "bg-ink text-ink-inverse" : "bg-sunken text-ink-muted hover:text-ink"
               }`}
             >
               All <span className="font-num">{all.length}</span>
@@ -76,7 +76,7 @@ export default async function RelationshipsPage({
                   key={entry}
                   href={href({ stage: entry })}
                   className={`press rounded-full px-3 py-1.5 text-sm font-medium ${
-                    parsed === entry ? "bg-brand text-white" : "bg-sunken text-ink-muted hover:text-ink"
+                    parsed === entry ? "bg-ink text-ink-inverse" : "bg-sunken text-ink-muted hover:text-ink"
                   }`}
                 >
                   {STAGE_LABEL[entry]}{" "}

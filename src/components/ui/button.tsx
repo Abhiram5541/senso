@@ -5,18 +5,18 @@ type Variant = "primary" | "accent" | "secondary" | "ghost" | "danger" | "link";
 type Size = "sm" | "md" | "lg" | "icon";
 
 /*
- * The primary action is the brand green, drawn as a pill with a soft green
- * glow beneath it. Ink is not used for buttons: on a light, friendly surface
- * a black button reads as a warning, and the green is what the whole product
- * uses to say "go".
+ * The primary action is an ink pill (CLAUDE.md D51). White on the brand
+ * orange clears AA only at display size, so the everyday "go" control is
+ * black — the orange is spent on the accent, the active state and the
+ * icon coins, where it is the loudest thing on the screen rather than the
+ * most frequent. The accent pill carries ink text for the same reason.
  */
 const VARIANTS: Record<Variant, string> = {
   primary:
-    "bg-brand text-white shadow-brand hover:bg-brand-active " +
-    "disabled:bg-brand/35 disabled:shadow-none",
-  /* Kept for callers; identical to primary now that the primary is green. */
+    "bg-ink text-ink-inverse hover:bg-instrument-raised " +
+    "disabled:bg-ink/30",
   accent:
-    "bg-brand text-white shadow-brand hover:bg-brand-active disabled:bg-brand/35 disabled:shadow-none",
+    "bg-brand text-ink shadow-brand hover:bg-brand-active disabled:bg-brand/35 disabled:shadow-none",
   secondary:
     "bg-surface text-ink border border-line-strong hover:border-brand-line hover:bg-brand-softer hover:text-brand-ink " +
     "active:bg-brand-soft " +
@@ -122,7 +122,7 @@ export function SegmentButton({
       className={cn(
         "press h-8 rounded-full px-3.5 text-base font-semibold",
         active
-          ? "bg-brand text-white shadow-brand"
+          ? "bg-ink text-ink-inverse"
           : "text-ink-muted hover:text-ink",
         className,
       )}

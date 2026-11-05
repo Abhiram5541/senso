@@ -37,8 +37,8 @@ export default function GlobalError({
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: "#f2f5f3",
-          color: "#17181c",
+          backgroundColor: "#f6f6f5",
+          color: "#111111",
           fontFamily:
             "system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
           padding: "24px",
@@ -51,7 +51,7 @@ export default function GlobalError({
               fontSize: "13px",
               letterSpacing: "0.08em",
               textTransform: "uppercase",
-              color: "#5a6b61",
+              color: "#5c5c5c",
             }}
           >
             SENSO
@@ -59,12 +59,12 @@ export default function GlobalError({
           <h1 style={{ margin: "0 0 12px", fontSize: "28px", fontWeight: 700 }}>
             SENSO could not start this page
           </h1>
-          <p style={{ margin: "0 0 20px", fontSize: "16px", lineHeight: 1.6, color: "#44504a" }}>
+          <p style={{ margin: "0 0 20px", fontSize: "16px", lineHeight: 1.6, color: "#3d3d3d" }}>
             The application failed before it could render anything. Your data has not been
             changed. If this persists, the server log holds the cause.
           </p>
           {error.digest && (
-            <p style={{ margin: "0 0 20px", fontSize: "13px", color: "#5a6b61" }}>
+            <p style={{ margin: "0 0 20px", fontSize: "13px", color: "#5c5c5c" }}>
               Reference {error.digest}
             </p>
           )}
@@ -79,7 +79,7 @@ export default function GlobalError({
               fontSize: "15px",
               fontWeight: 600,
               color: "#ffffff",
-              backgroundColor: "#17804a",
+              backgroundColor: "#111111",
               cursor: "pointer",
             }}
           >

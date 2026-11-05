@@ -1,30 +1,27 @@
 @import "tailwindcss";
 
 /* ============================================================================
-   SENSO design tokens
+   SENSO design tokens  (CLAUDE.md D51)
 
    The product answers "should I work with this creator?" — a decision made
    by marketing teams, not by engineers. Four decisions carry that reading:
 
-   1. THE CANVAS IS SOFT, AND THE WORK FLOATS ON IT. A pale violet-grey ground
-      with white, borderless, generously rounded cards set on it. Structure is
-      tonal: a card is white *because* the ground is not, so no hairline is
-      needed to say where it ends. The chrome (rail, topbar) is the same white
-      as the cards — it is furniture in the same room, not a housing around it.
+   1. WHITE PAPER, ONE CHARCOAL. The page is near-white; work sits on it as
+      white, borderless, generously rounded cards. Charcoal
+      (`--color-instrument`) is the one dark material — a rounded slab a
+      screen may use once, the way an editorial page drops one dark spread.
 
-   2. ONE VIOLET, SPENT ON INTENT. The brand violet — the mark's purple —
-      marks actions, the active route, focus and the score arc, and nothing
-      it measures: a positive reading is green, caution amber, risk rose, so
-      a control never looks like a result. Deep violet (`--color-instrument`,
-      the mark's tile) is the one dark material, used for the single feature
-      card a screen is allowed.
+   2. ONE ORANGE, SPENT ON INTENT. `--color-brand` marks actions, the active
+      route, focus, the score arc and the icon coins. It is a fill colour:
+      white text on it clears AA only at display size, so small text on an
+      orange fill is ink, and orange *text* on white is `--color-brand-ink`.
+      A measured positive stays green, so a control never reads as a result.
 
-   3. RADIUS IS LARGE AND RISES WITH SIZE. 6 / 10 / 12 / 16 / 20 / 28px —
-      chip, input, button, tile, card, feature card. Controls are pills.
+   3. RADIUS IS LARGE AND RISES WITH SIZE. 6 / 10 / 12 / 20 / 28 / 36 / 48px —
+      chip, input, button, tile, card, feature slab, shell. Controls are pills.
 
-   4. TWO VOICES. Plus Jakarta Sans sets headings and every numeral (it ships
-      tabular figures, so a metric column aligns). Inter carries interface
-      text, where the job is to disappear at 12px in a dense table.
+   4. TWO VOICES. Urbanist sets headings, large and light, tightly tracked.
+      Inter carries interface text and every numeral (tabular figures).
 
    This block is the ONLY place raw colour values are allowed to appear.
    ========================================================================= */
@@ -32,8 +29,10 @@
 @theme {
   /* --- Type ------------------------------------------------------------- */
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-jakarta), var(--font-inter), ui-sans-serif, sans-serif;
-  --font-num: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-urbanist), var(--font-inter), ui-sans-serif, sans-serif;
+  /* Numerals stay in Inter: Urbanist's figures are proportional, and a metric
+     column must align (D5, D51). */
+  --font-num: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   /* Sanctioned only inside <pre>/<code>. */
   --font-mono: ui-monospace, "Cascadia Mono", "SF Mono", Menlo, monospace;
 
@@ -61,10 +60,10 @@
   --text-title-lg: 2.375rem; /* 38px — the title of a screen that is a document */
   --text-title-lg--line-height: 2.75rem;
 
-  --text-display: clamp(2.5rem, 1.5rem + 3.8vw, 4.5rem);
-  --text-display--line-height: 1.04;
-  --text-display-sm: clamp(1.75rem, 1.25rem + 2.1vw, 2.75rem);
-  --text-display-sm--line-height: 1.12;
+  --text-display: clamp(3.25rem, 1.4rem + 7.4vw, 9rem);
+  --text-display--line-height: 0.94;
+  --text-display-sm: clamp(2.25rem, 1.3rem + 3.6vw, 4.5rem);
+  --text-display-sm--line-height: 1;
 
   /* Metric ramp. A figure is read as a quantity first and glyphs second, so
      it can go larger than a heading before it starts shouting. */
@@ -75,60 +74,58 @@
   --text-hero: clamp(3.5rem, 2.6rem + 3.4vw, 5rem); /* the one executive signal */
   --text-hero--line-height: 1;
 
-  --tracking-display: -0.03em;
+  --tracking-display: -0.045em;
   --tracking-tight: -0.015em;
 
   /* --- Workspace -------------------------------------------------------
-     A soft violet-grey ground, tinted from the mark's tile; white where the
-     work is. */
+     A warm near-white ground; white where the work is. */
   /* The frame: the page ground the rounded shell sits on, then the shell's
      own fill, then white where the work is. Three steps, no lines. */
-  --color-ground: #e6e3ec;
-  --color-canvas: #f3f2f6;
+  --color-ground: #e9e9e7;
+  --color-canvas: #f6f6f5;
   --color-surface: #ffffff;
-  --color-sunken: #f5f4f8;
-  --color-sunken-strong: #e9e6ef;
+  --color-sunken: #f2f2f1;
+  --color-sunken-strong: #e7e7e5;
 
-  --color-line: #e7e4ee;
-  --color-line-strong: #d6d1e0;
+  --color-line: #e6e6e4;
+  --color-line-strong: #d3d3d0;
   /* The rule used *inside* a card to separate rows. Lighter than any edge. */
-  --color-rule: #efedf4;
+  --color-rule: #efefed;
 
   /* Three-step text ramp. Every step clears WCAG AA against surface, canvas
      and sunken — measured: 16.3, 7.5 and 5.7 worst case. */
-  --color-ink: #17122a;
-  --color-ink-muted: #524a66;
-  --color-ink-subtle: #635b78;
-  --color-ink-inverse: #f7f5fb;
+  --color-ink: #111111;
+  --color-ink-muted: #4a4a48;
+  --color-ink-subtle: #646461;
+  --color-ink-inverse: #f7f7f5;
 
-  /* --- Instrument: the deep-violet feature card ------------------------
-     The one dark material — the tile the SENSO mark sits on. It does not
-     wrap the page; it is a rounded card a screen may use once, for its
-     headline reading. Token names are kept from the graphite era so every
-     consumer inherited the new material. */
-  --color-instrument: #1a0a2e;
-  --color-instrument-deep: #120722;
-  --color-instrument-raised: #261441;
-  --color-instrument-line: #342052;
-  --color-instrument-line-strong: #4a3175;
-  --color-instrument-ink: #f5f1fb;
-  --color-instrument-muted: #b7a8d8;
-  --color-instrument-subtle: #9a8bbf;
+  /* --- Instrument: the charcoal slab ------------------------------------
+     The one dark material. It does not wrap the page; it is a rounded slab a
+     screen may use once, for its headline reading. Token names are kept from
+     the graphite era so every consumer inherits the material. */
+  --color-instrument: #141414;
+  --color-instrument-deep: #0b0b0b;
+  --color-instrument-raised: #202020;
+  --color-instrument-line: #2b2b2b;
+  --color-instrument-line-strong: #3b3b3b;
+  --color-instrument-ink: #f5f5f4;
+  --color-instrument-muted: #a8a8a5;
+  --color-instrument-subtle: #8c8c89;
 
-  /* --- Accent: the violet -----------------------------------------------
-     The mark's purple. Actions, active route, focus, the score arc.
-     6.86:1 with white text. A measured positive is *not* this hue any more:
-     "go" is violet, "good" stays green, so a button can never be mistaken
-     for a reading. */
-  --color-brand: #5b2cf0;
-  --color-brand-active: #4c22cc;
-  --color-brand-soft: #ece6fd;
-  --color-brand-softer: #f4f1fe;
-  --color-brand-line: #cfc0f9;
-  --color-brand-ink: #4a1fc4;
-  /* On the deep-violet card. */
-  --color-brand-lift: #b28cff;
-  --color-brand-glow: #8f6bff;
+  /* --- Accent: the orange -----------------------------------------------
+     Actions, active route, focus, the score arc, icon coins. 3.4:1 with
+     white — enough for icons and display-size type, not for a 14px label, so
+     small text on it is ink (5.9:1). `brand-ink` is the orange for text on
+     white (5.5:1). "Go" is orange, "good" stays green. */
+  --color-brand: #ff4f1f;
+  --color-brand-active: #e8400f;
+  --color-brand-soft: #ffe8df;
+  --color-brand-softer: #fff4ef;
+  --color-brand-line: #ffc4ae;
+  --color-brand-ink: #c2340c;
+  /* On the charcoal slab (7.1:1 against it). */
+  --color-brand-lift: #ff7a52;
+  --color-brand-glow: #ff6a3d;
 
   /* --- Brass: measurement, and nothing else ------------------------------
      The dial's tick ring and the verification seal. Never a control. */
@@ -156,7 +153,7 @@
   --color-critical-line: #f5c3cc;
   --color-critical-lift: #f78a9c;
 
-  --color-neutral-metric: #5b5470;
+  --color-neutral-metric: #5a5a57;
 
   /* --- Provenance: how a fact came to exist ------------------------------
      Verified stays blue so it is never confused with a positive reading.
@@ -173,12 +170,12 @@
   --color-estimated: #a1600a;
 
   /* --- Chart series -----------------------------------------------------
-     Fixed order, never cycled. Violet, deep teal, warm orange — the mark's
-     three families; three is the ceiling and comparison renders side-by-side. */
-  --color-series-1: #5b2cf0;
+     Fixed order, never cycled. Orange, deep teal, indigo — disjoint from the
+     semantic hues; three is the ceiling and comparison renders side-by-side. */
+  --color-series-1: #ff4f1f;
   --color-series-2: #1d6a7a;
-  --color-series-3: #d9782a;
-  --color-grid: #e7e4ee;
+  --color-series-3: #5b5bd6;
+  --color-grid: #e6e6e4;
 
   /* --- Decorative tints: avatar identity only ---------------------------- */
   --color-tint-slate: #4a5a6b;
@@ -191,27 +188,26 @@
   --radius-xs: 0.375rem; /* 6px  — micro-tag, kbd */
   --radius-sm: 0.625rem; /* 10px — inputs, chips */
   --radius-md: 0.75rem; /* 12px — menu items, nav items, icon buttons */
-  --radius-lg: 1.125rem; /* 18px — tiles, list cards */
-  --radius-xl: 1.5rem; /* 24px — cards */
-  --radius-2xl: 2rem; /* 32px — feature card, the rail, overlays */
-  --radius-3xl: 2.5rem; /* 40px — the shell */
+  --radius-lg: 1.25rem; /* 18px — tiles, list cards */
+  --radius-xl: 1.75rem; /* 24px — cards */
+  --radius-2xl: 2.25rem; /* 32px — feature card, the rail, overlays */
+  --radius-3xl: 3rem; /* 40px — the shell */
 
   /* --- Elevation ---------------------------------------------------------
      Cards are borderless; depth is tonal against the canvas, and a card that
      floats gets a wide, soft, low-alpha shadow rather than a hairline. */
-  --shadow-raised: 0 1px 2px 0 rgb(26 10 46 / 0.04);
+  --shadow-raised: 0 1px 2px 0 rgb(17 17 17 / 0.04);
   /* Flat: a white card on the shell's grey needs no shadow to have an edge. */
   --shadow-card: 0 0 0 0 transparent;
-  --shadow-lifted: 0 2px 6px -2px rgb(26 10 46 / 0.08), 0 14px 32px -12px rgb(26 10 46 / 0.14);
-  --shadow-popover: 0 0 0 1px rgb(26 10 46 / 0.05), 0 6px 12px -4px rgb(26 10 46 / 0.08),
-    0 20px 40px -12px rgb(26 10 46 / 0.16);
-  --shadow-overlay: 0 0 0 1px rgb(26 10 46 / 0.06), 0 12px 24px -8px rgb(26 10 46 / 0.12),
-    0 36px 72px -20px rgb(26 10 46 / 0.28);
-  --shadow-instrument: 0 4px 12px -4px rgb(18 7 34 / 0.3), 0 24px 48px -16px rgb(18 7 34 / 0.4);
+  --shadow-lifted: 0 2px 6px -2px rgb(17 17 17 / 0.08), 0 14px 32px -12px rgb(17 17 17 / 0.14);
+  --shadow-popover: 0 0 0 1px rgb(17 17 17 / 0.05), 0 6px 12px -4px rgb(17 17 17 / 0.08),
+    0 20px 40px -12px rgb(17 17 17 / 0.16);
+  --shadow-overlay: 0 0 0 1px rgb(17 17 17 / 0.06), 0 12px 24px -8px rgb(17 17 17 / 0.12),
+    0 36px 72px -20px rgb(17 17 17 / 0.28);
+  --shadow-instrument: 0 4px 12px -4px rgb(11 11 11 / 0.3), 0 24px 48px -16px rgb(11 11 11 / 0.4);
   --shadow-chrome-raised: inset 0 1px 0 0 rgb(255 255 255 / 0.08);
-  /* The brand pill: a coloured glow under a violet button, the way the
-     references light a primary action. */
-  --shadow-brand: 0 1px 2px rgb(91 44 240 / 0.2), 0 8px 20px -8px rgb(91 44 240 / 0.45);
+  /* The brand pill: a coloured glow under an orange control. */
+  --shadow-brand: 0 1px 2px rgb(255 79 31 / 0.2), 0 10px 24px -8px rgb(255 79 31 / 0.5);
 
   /* --- Layout constants ------------------------------------------------- */
   --spacing-sidebar: 16rem;
@@ -260,8 +256,8 @@
     font-variant-numeric: lining-nums;
   }
 
-  /* Every numeric aligns in a column. Plus Jakarta Sans ships `tnum`; it is
-     stated so a fallback face behaves the same way, and `zero 0` so no face
+  /* Every numeric aligns in a column. Inter ships `tnum`; it is stated so a
+     fallback face behaves the same way, and `zero 0` so no face
      ever slashes a zero in a metric. */
   .font-num,
   [class*="font-num"] {
@@ -317,8 +313,7 @@
     outline: none;
   }
 
-  /* On the deep-violet card the brand violet does not clear contrast; the
-     lift variant exists for exactly this surface. */
+  /* On the charcoal slab the lift variant carries focus at full contrast. */
   .bg-instrument :focus-visible,
   .bg-instrument-deep :focus-visible {
     outline-color: var(--color-brand-lift);
@@ -415,11 +410,13 @@
   }
 
   /* Marketing display heading. */
+  /* Large and light, the way an editorial headline is set: at 9rem a bold
+     weight shouts, a regular one carries. */
   .display-lg {
     font-family: var(--font-display);
     font-size: var(--text-display);
     line-height: var(--text-display--line-height);
-    font-weight: 700;
+    font-weight: 500;
     letter-spacing: var(--tracking-display);
   }
 
@@ -427,8 +424,49 @@
     font-family: var(--font-display);
     font-size: var(--text-display-sm);
     line-height: var(--text-display-sm--line-height);
-    font-weight: 700;
+    font-weight: 500;
     letter-spacing: var(--tracking-display);
+  }
+
+  /* --- Marketing materials (D51) ----------------------------------------
+     The landing page reads in the display voice throughout; the application
+     keeps Inter for interface text. */
+  .mk {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    line-height: 1.6rem;
+  }
+
+  /* A panel set on the charcoal slab: a translucent lift, not decoration —
+     it is how a card on near-black stays defined without a border reading
+     as a crack. */
+  .slab-card {
+    background-color: rgb(255 255 255 / 0.06);
+    box-shadow: inset 0 1px 0 0 rgb(255 255 255 / 0.08), inset 0 0 0 1px rgb(255 255 255 / 0.05);
+    backdrop-filter: blur(12px);
+  }
+
+  /* A creator photograph fading into the brand at its foot, so the name bar
+     beneath it reads as the same object. */
+  .photo-fade {
+    position: relative;
+    isolation: isolate;
+  }
+  .photo-fade::after {
+    content: "";
+    position: absolute;
+    inset: 45% 0 0 0;
+    z-index: 1;
+    background: linear-gradient(to bottom, transparent, rgb(255 79 31 / 0.85));
+    pointer-events: none;
+  }
+
+  /* A faint construction grid behind the charcoal slab. Geometry, not texture. */
+  .grid-lines {
+    background-image:
+      linear-gradient(rgb(255 255 255 / 0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(255 255 255 / 0.035) 1px, transparent 1px);
+    background-size: 72px 72px;
   }
 
   /* The dial's tick ring. A repeating conic gradient masked to a hairline
@@ -482,6 +520,18 @@
   @keyframes so-shimmer {
     from { background-position: 200% 0; }
     to { background-position: -200% 0; }
+  }
+
+  @keyframes so-float {
+    0%, 100% { transform: translate3d(0, 0, 0) rotate(var(--float-rotate, 0deg)); }
+    50% { transform: translate3d(0, -10px, 0) rotate(var(--float-rotate, 0deg)); }
+  }
+
+  /* A slow idle bob for the hero's floating tiles. Decorative, so it is the
+     first thing reduced motion removes. */
+  .animate-float {
+    animation: so-float 6s ease-in-out infinite;
+    animation-delay: var(--float-delay, 0ms);
   }
 
   @keyframes so-marquee {
@@ -705,7 +755,7 @@
 
   dialog::backdrop {
     opacity: 0;
-    background-color: rgb(18 7 34 / 0.4);
+    background-color: rgb(11 11 11 / 0.45);
     backdrop-filter: blur(3px);
     transition:
       opacity var(--duration-base) var(--ease-out-quick),
@@ -749,6 +799,10 @@
   .lift:hover,
   .press:active:not(:disabled) {
     transform: none;
+  }
+
+  .animate-float {
+    animation: none;
   }
 
   /* The reveal must never leave content invisible when its transition is

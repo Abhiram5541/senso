@@ -78,9 +78,9 @@ export default function PricingPage() {
   return (
     <MarketingChrome>
       <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:py-24">
-        <div className="max-w-2xl space-y-3">
+        <div className="max-w-5xl space-y-6">
           <h1 className="display-lg text-ink">Every plan sees the same numbers.</h1>
-          <p className="text-md leading-6 text-ink-muted">
+          <p className="max-w-2xl text-lg leading-8 text-ink-muted">
             Plans differ in how much you can search and what you can automate — never in the
             quality of the data or in what SENSO is willing to tell you about it.
             Provenance, confidence and score components are on every profile at every tier.
@@ -91,14 +91,14 @@ export default function PricingPage() {
           {Plan.options.map((plan) => (
             <div
               key={plan}
-              className={`flex flex-col rounded-xl border bg-surface p-5 shadow-raised ${
-                plan === "growth" ? "border-ink" : "border-line"
+              className={`flex flex-col rounded-[2rem] p-7 ${
+                plan === "growth" ? "bg-ink text-ink-inverse [&_.text-ink]:text-ink-inverse [&_.text-ink-muted]:text-instrument-muted [&_.text-ink-subtle]:text-instrument-muted" : "bg-sunken"
               }`}
             >
               <div className="flex items-center justify-between gap-2">
                 <Eyebrow as="h2">{PLAN_CONFIG[plan].label}</Eyebrow>
                 {plan === "growth" && (
-                  <span className="label-caps rounded-sm bg-ink px-1.5 py-0.5 text-ink-inverse">
+                  <span className="label-caps rounded-full bg-brand px-2.5 py-1 text-ink">
                     Most teams
                   </span>
                 )}
@@ -107,11 +107,11 @@ export default function PricingPage() {
                   so it leads — set in the product's light-numeral treatment. */}
               <p className="mt-4">
                 {PLAN_CONFIG[plan].searchesPerMonth === null ? (
-                  <span className="text-display font-medium leading-none tracking-display text-ink">
+                  <span className="font-display text-[clamp(2.75rem,2rem+2.4vw,4rem)] font-medium leading-none tracking-display text-ink">
                     Unlimited
                   </span>
                 ) : (
-                  <span className="font-num text-display font-medium leading-none text-ink">
+                  <span className="font-num text-[clamp(2.75rem,2rem+2.4vw,4rem)] font-medium leading-none text-ink">
                     {PLAN_CONFIG[plan].searchesPerMonth}
                   </span>
                 )}
@@ -122,7 +122,7 @@ export default function PricingPage() {
               </p>
               <LinkButton
                 href="/register"
-                variant={plan === "growth" ? "primary" : "secondary"}
+                variant={plan === "growth" ? "accent" : "primary"}
                 className="mt-5 w-full"
               >
                 {plan === "free" ? "Start free" : "Request access"}

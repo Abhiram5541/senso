@@ -1,228 +1,139 @@
 ---
 name: SENSO
-description: An instrument that publishes measurements — graphite housing, warm paper, one cobalt accent, brass reserved for what was measured.
+description: Editorial and measured — white paper, one charcoal slab, one orange spent on intent, large light Urbanist headlines over Inter figures.
 colors:
-  canvas: "#f6f4f1"
+  ground: "#e9e9e7"
+  canvas: "#f6f6f5"
   surface: "#ffffff"
-  sunken: "#f0ede8"
-  sunken-strong: "#e4e0d9"
-  line: "#e2ded7"
-  line-strong: "#c8c3ba"
-  rule: "#edeae5"
-  ink: "#17171a"
-  ink-muted: "#4d4e57"
-  ink-subtle: "#63646d"
-  ink-inverse: "#f7f6f4"
-  instrument: "#17181c"
-  instrument-deep: "#101115"
-  instrument-raised: "#23252c"
-  instrument-line: "#2c2f37"
-  instrument-line-strong: "#3a3d47"
-  instrument-ink: "#f4f4f6"
-  instrument-muted: "#9a9daa"
-  instrument-subtle: "#71747f"
-  brand: "#2743d4"
-  brand-active: "#1a2f9e"
-  brand-soft: "#e8ecfc"
-  brand-line: "#c3ccf5"
-  brand-lift: "#8fa4ff"
-  brass: "#a97a25"
-  brass-lift: "#e0b165"
-  positive: "#0f6f52"
-  caution: "#9c5606"
-  critical: "#b0233a"
-  inferred: "#6435c8"
-  series-1: "#2743d4"
-  series-2: "#c25c10"
-  series-3: "#0d7570"
+  sunken: "#f2f2f1"
+  sunken-strong: "#e7e7e5"
+  line: "#e6e6e4"
+  line-strong: "#d3d3d0"
+  rule: "#efefed"
+  ink: "#111111"
+  ink-muted: "#4a4a48"
+  ink-subtle: "#646461"
+  ink-inverse: "#f7f7f5"
+  instrument: "#141414"
+  instrument-deep: "#0b0b0b"
+  instrument-raised: "#202020"
+  instrument-line: "#2b2b2b"
+  instrument-ink: "#f5f5f4"
+  instrument-muted: "#a8a8a5"
+  brand: "#ff4f1f"
+  brand-active: "#e8400f"
+  brand-soft: "#ffe8df"
+  brand-ink: "#c2340c"
+  brand-lift: "#ff7a52"
+  positive: "#167243"
+  caution: "#a1600a"
+  critical: "#c4304a"
+  verified: "#2b62d9"
+  inferred: "#0e7490"
+  series-1: "#ff4f1f"
+  series-2: "#1d6a7a"
+  series-3: "#5b5bd6"
 typography:
   display:
-    fontFamily: "Space Grotesk, ui-sans-serif, sans-serif"
-    fontSize: "clamp(2.25rem, 1.4rem + 3.6vw, 4.25rem)"
-    fontWeight: 700
-    lineHeight: 1.04
-    letterSpacing: "-0.028em"
-  title:
-    fontFamily: "Space Grotesk, ui-sans-serif, sans-serif"
-    fontSize: "1.75rem"
-    fontWeight: 700
-    lineHeight: "2.125rem"
-    letterSpacing: "-0.018em"
+    fontFamily: "Urbanist, Inter, ui-sans-serif, sans-serif"
+    fontSize: "clamp(3.25rem, 1.4rem + 7.4vw, 9rem)"
+    fontWeight: 500
+    lineHeight: 0.94
+    letterSpacing: "-0.045em"
+  display-sm:
+    fontFamily: "Urbanist, Inter, ui-sans-serif, sans-serif"
+    fontSize: "clamp(2.25rem, 1.3rem + 3.6vw, 4.5rem)"
+    fontWeight: 500
+    lineHeight: 1
+    letterSpacing: "-0.045em"
   body:
-    fontFamily: "Instrument Sans, ui-sans-serif, system-ui, sans-serif"
+    fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif"
     fontSize: "0.875rem"
     fontWeight: 400
     lineHeight: "1.375rem"
-    letterSpacing: "normal"
   numeric:
-    fontFamily: "Space Grotesk, ui-monospace, sans-serif"
-    fontSize: "1.875rem"
-    fontWeight: 500
-    lineHeight: "2.125rem"
-    letterSpacing: "-0.015em"
-  label-caps:
-    fontFamily: "Instrument Sans, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "0.6875rem"
-    fontWeight: 650
-    lineHeight: "1rem"
-    letterSpacing: "0.075em"
+    fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif"
+    fontFeatureSettings: "tnum"
 rounded:
-  xs: "4px"
-  sm: "6px"
-  md: "8px"
-  lg: "10px"
-  xl: "14px"
-  "2xl": "18px"
-spacing:
-  sidebar: "248px"
-  sidebar-rail: "68px"
-  topbar: "56px"
-  measure: "68ch"
+  xs: "6px"
+  sm: "10px"
+  md: "12px"
+  lg: "20px"
+  xl: "28px"
+  "2xl": "36px"
+  "3xl": "48px"
 components:
   button-primary:
     backgroundColor: "{colors.ink}"
     textColor: "{colors.ink-inverse}"
-    rounded: "{rounded.md}"
-    height: "36px"
-    padding: "0 14px"
-  button-primary-hover:
-    backgroundColor: "{colors.instrument-raised}"
+    rounded: "9999px"
   button-accent:
     backgroundColor: "{colors.brand}"
-    textColor: "#ffffff"
-    rounded: "{rounded.md}"
-    height: "36px"
-    padding: "0 14px"
-  button-secondary:
-    backgroundColor: "{colors.surface}"
     textColor: "{colors.ink}"
-    rounded: "{rounded.md}"
-    height: "36px"
-    padding: "0 14px"
-  panel:
-    backgroundColor: "{colors.surface}"
-    rounded: "{rounded.xl}"
-    padding: "16px"
-  instrument-band:
-    backgroundColor: "{colors.instrument}"
-    textColor: "{colors.instrument-ink}"
-    padding: "28px 24px"
-  nav-item-active:
-    backgroundColor: "{colors.instrument-raised}"
-    textColor: "{colors.instrument-ink}"
-    rounded: "{rounded.md}"
-    padding: "8px 10px"
-  badge:
-    backgroundColor: "{colors.sunken}"
-    textColor: "{colors.ink-muted}"
     rounded: "9999px"
-    padding: "2px 8px"
-  input:
-    backgroundColor: "{colors.surface}"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.sm}"
-    height: "36px"
-    padding: "0 12px"
+  cta-pill:
+    backgroundColor: "{colors.ink}"
+    textColor: "{colors.ink-inverse}"
+    trailingCoin: "{colors.brand}"
+  slab:
+    backgroundColor: "{colors.instrument}"
+    rounded: "48px"
 ---
 
 # Design System: SENSO
 
+The tokens live in `src/app/globals.css` (`@theme`) and nowhere else. This document
+explains them; CLAUDE.md D51 records why they changed.
+
 ## Overview
 
-SENSO is an instrument for deciding whether a number can be trusted before money
-is spent on it. The design has one thesis and everything follows from it:
-
-> **The chrome is the instrument. The work is printed on paper set inside it.**
-
-The rail, the topbar, the marketing hero and the marketing footer are one continuous
-graphite housing. The workspace inside them is warm paper, and white is reserved for the
-panels where measurement actually happens. Before this, the housing existed on exactly
-one card — the score readout — while everything else was grey-on-grey admin chrome, so
-the product's strongest idea was quarantined inside a component. Now the frame states
-the identity on every route, and the paper reads brighter for sitting in a dark bezel.
-
-Aesthetic position: **a Bloomberg terminal built by a Swiss watchmaker.** Dense and
-legible like a trading surface; engraved, restrained and unhurried like a certificate.
-It is not a consumer dashboard and it is not a brochure.
+SENSO is an instrument for deciding whether a number can be trusted before money is spent
+on it, sold to marketing teams. The visual language is **editorial**: white paper, large
+and light headlines, one charcoal slab and one orange, the way a well-set magazine spread
+spends its one dark page and its one colour.
 
 Three rules decide almost every open question:
 
-1. **Scarcity is the accent's meaning.** Cobalt marks intent — interaction, active
-   state, focus, verified provenance. Brass marks measurement — the dial, its ticks, the
-   verification seal — and appears nowhere else, so a gold mark always means "this was
-   read, not asserted".
+1. **Scarcity is the accent's meaning.** Orange marks intent — the active route, focus,
+   the score arc, icon coins, the CTA's arrow coin. It is a *fill*, not a text colour:
+   white on it clears AA only at display size, so small text on orange is ink, and
+   orange text on white is `brand-ink`.
 2. **Absence is drawn, never filled.** A component nobody could measure gets a hatched
-   track, not an empty bar; a risk with no signal reads `unknown`, not `low`; a chart
-   without history renders a building-history state. Manufacturing a figure to avoid an
-   empty state is the one unrecoverable failure in this product.
-3. **Composition before ornament.** Bands and splits before objects. A screen that is a
-   grid of identical bordered cards has no hierarchy, and no amount of type-size
-   adjustment adds one afterwards.
+   track, not an empty bar; a risk with no signal reads `unknown`, not `low`.
+   Manufacturing a figure to avoid an empty state is the one unrecoverable failure.
+3. **Composition before ornament.** Bands and splits before objects. One charcoal slab
+   per screen.
 
 ## Colors
 
-**The housing.** `instrument` #17181c is the rail, topbar, mobile drawer, marketing hero
-and footer, and the score readout. `instrument-raised` #23252c is the only lifted surface
-inside it — the active nav item, the org block, the search trigger. Elevation on graphite
-is *light*, not shadow: a raised surface takes `inset 0 1px 0 rgb(255 255 255 / 0.07)`,
-the way a machined panel catches a highlight. A shadow on near-black is invisible and a
-border on near-black reads as a crack.
+**Paper.** `canvas` #f6f6f5 is the application ground; `surface` #ffffff is a card and
+the marketing page. `sunken` #f2f2f1 is apparatus and the marketing site's soft tiles.
 
-**The paper.** `canvas` #f6f4f1 is the page ground — warm, never pure white and never
-cool grey. `surface` #ffffff is a panel holding analysis. `sunken` #f0ede8 is apparatus:
-footers, filter rails, disabled fields. A screen reads correctly when the white areas
-are exactly the places measurement is happening.
+**Charcoal.** `instrument` #141414 is the one dark material — the creator showcase slab
+on the landing page, the score card, the sign-in panel. A panel on it is `.slab-card`
+(a translucent lift with an inset highlight), never a bordered box.
 
-**Text.** Three steps, all measured against all three light grounds: `ink` #17171a
-(16.4:1 worst case), `ink-muted` #4d4e57 (7.4:1), `ink-subtle` #63646d (5.3:1). On
-graphite: `instrument-ink`, `instrument-muted` (6.6:1) for anything that must be read,
-and `instrument-subtle` only for decorative or duplicated text — it does not clear 4.5:1.
+**Orange.** `brand` #ff4f1f for fills, `brand-ink` #c2340c for text on white (5.5:1),
+`brand-lift` #ff7a52 on charcoal (7.1:1). The primary *button* is ink, not orange: an
+orange primary would carry 14px white text below AA and would spend the accent on every
+screen.
 
-**Accent.** `brand` #2743d4 on paper, `brand-lift` #8fa4ff on graphite — deep cobalt does
-not clear contrast against near-black, so the chrome gets its own step rather than a
-lower-contrast compromise. Primary buttons are **ink, not cobalt**: a blue primary button
-on a blue-accented product spends the accent on every screen until it means nothing. The
-one cobalt button in the product is the marketing call to action.
-
-**Brass.** #a97a25 on paper, #e0b165 on graphite. Dial ticks and the verification seal
-only. Never a control, never a link, never a fill.
-
-**Measurement colour.** Emerald = growth, amber = caution, rose = risk, violet =
-AI-inferred. These apply to data and never to chrome. The three chart series are disjoint
-from all of them so a series is never mistaken for a warning; three overlaid series is the
-ceiling, and comparison renders side by side rather than adding a fourth.
+**Measurement colour.** Emerald = growth, amber = caution, rose = risk, blue = verified,
+teal = AI-inferred. These apply to data and never to chrome. Chart series are orange,
+deep teal, indigo — three is the ceiling.
 
 ## Typography
 
-Two voices with non-overlapping jobs, and the split is the point.
+**Urbanist** sets headings: large, weight 500, tracked −0.045em at display size. The
+landing page reads in it throughout (`.mk`).
 
-**Space Grotesk** — every heading and **every numeral**. It descends from Space Mono, so
-its digits are uniform width by construction: a metric column aligns without a companion
-monospace and without a feature flag, and its engineered figures make a score read as a
-reading rather than as a label. Weights 500/600/700 only.
-
-**Instrument Sans** — interface text, where the job is to disappear. A humanist grotesque
-that holds at 11px in a dense table and never competes with the display voice. Weights
-400/500/600/700.
-
-The interface ramp is fixed — a dashboard must not reflow its type as the window moves —
-and runs `text-2xs` 11px through `text-title-lg` 36px, with 14px body set on `body` and
-carrying no token. Only the two marketing display sizes are fluid `clamp()`, because a
-landing page is read at every width there is.
-
-Metrics have their own ramp above the text ramp: `text-metric` 30px, `text-metric-lg`
-44px, `text-hero` clamped 56–80px. A figure and a heading at the same pixel size do not
-carry the same weight — a number is read as a quantity first and glyphs second, so it can
-go larger before it starts shouting.
-
-Caps appear in exactly one recipe: `.label-caps` / `.label-caps-sm`, in the interface
-voice, with tracking that keeps a geometric face from colliding at 10px. Body measure is
-capped at 68ch by the `.measure` utility.
+**Inter** sets interface text and **every numeral** (`.font-num`, tabular figures).
+Urbanist's digits are proportional, so a metric column set in it would not align.
 
 ## Layout
 
-Rail 248px, collapsing to a 68px icon rail (remembered per user), becoming a graphite
-drawer below `lg`. Topbar 56px, sticky, graphite, and carrying only what every route
+Rail 248px, collapsing to a 68px icon rail (remembered per user), becoming a
+drawer below `lg`. Topbar 56px, sticky, and carrying only what every route
 shares — the command palette, remaining search allowance, help, notifications. Identity
 and account live in the rail, which is what frees the topbar from being a second row of
 chrome.
@@ -231,7 +142,7 @@ Page structure, in increasing weight:
 
 - `PageHeader` — sits directly on the canvas, no slab. Breadcrumb, title in the display
   voice, optional lead figure in the numeric voice, description at `measure`.
-- `Instrument` — the graphite band carrying the screen's single headline reading. **At
+- `Instrument` — the charcoal card carrying the screen's single headline reading. **At
   most one per screen**; two and neither is the headline.
 - `Section` / `PageBand` — a full-bleed white band separated by a rule. Structure without
   a box, and the default for most groupings.
@@ -256,18 +167,16 @@ their first layer, so an overlay stays defined against white without a second de
 - `lifted` — hover state for a clickable card.
 - `popover` / `overlay` — things that genuinely float: menus, dialogs, sheets.
 - `instrument` — the score readout, floated off the canvas.
-- `chrome-raised` — the inset top highlight that lifts a surface *inside* the graphite.
+- `chrome-raised` — the inset top highlight that lifts a surface *inside* the charcoal.
 
 Rows tint on hover. Clickable cards lift 2px. Static cards do not move at all.
 
 ## Shapes
 
-Radius rises with the size of the thing: 4px micro-tag, 6px input and small button, 8px
-button and nav item, 10px tile, 14px panel, 18px instrument housing and overlay. One
-radius everywhere is the tell of a system that picked a number instead of making a
-decision; a panel that curves more than the chip inside it reads as an object holding
-contents. Pills (`rounded-full`) are for small controls only — badges, filter chips,
-progress tracks, dots.
+Radius rises with the size of the thing: 6px micro-tag, 10px input, 12px menu item,
+20px tile, 28px card, 36px feature card, 48px slab and shell. One radius everywhere is
+the tell of a system that picked a number instead of making a decision. Buttons, tabs and
+segmented controls are pills; the marketing site's photo cards are 32px.
 
 The recurring geometric device is the **orbit**: the arc the mark is built from, drawn at
 page scale behind the marketing hero and the sign-in panel, and drawn as graduations
@@ -277,12 +186,12 @@ illustration, never a texture.
 ## Components
 
 **Score dial** (`ScoreRing`). The product's signature artifact. A brass tick ring engraved
-around a cobalt arc, the value set in the numeric voice at 33% of the dial's diameter, the
+around an orange arc, the value set in the numeric voice at 33% of the dial's diameter, the
 unit below in caps. The arc sweeps from empty once on mount and never again; under
 reduced motion the inline dash offset is what renders, so the value is never lost. The
 tick ring is suppressed below 80px, where it would collapse into a grey smudge.
 
-**Instrument band** (`Instrument`). Full-bleed graphite carrying the screen's one headline
+**Instrument** (`Instrument`). A rounded charcoal card carrying the screen's one headline
 reading — the roster's median health, a campaign's performance score. Top edge lit by a
 hairline of white at 8%.
 
@@ -301,7 +210,7 @@ prompt version where AI was involved, and field confidence. A click-through, not
 tooltip: a tooltip cannot be reached on touch, cannot be read at leisure and cannot hold
 a source link.
 
-**Buttons.** Ink primary, cobalt accent (marketing only), outlined secondary, ghost,
+**Buttons.** Ink primary, orange accent with ink text, the marketing `CtaPill` (ink with an orange arrow coin), outlined secondary, ghost,
 rose danger, link. Heights 32/36/44. `loading` shows a spinner, disables the control and
 holds its width.
 
@@ -333,7 +242,8 @@ alone for the same reason.
 
 - Don't put a caps kicker above a heading. Wayfinding belongs in the breadcrumb; the
   heading carries its own weight.
-- Don't spend cobalt on a large fill, a decorative surface, or an ordinary toolbar button.
+- Don't set small white text on orange, and don't spend orange on an ordinary toolbar button.
+  The landing page's closing block is the one large orange fill.
 - Don't put brass on anything that is not a measurement.
 - Don't nest cards, and don't use a row of same-size icon-heading-text cards as a page
   structure.

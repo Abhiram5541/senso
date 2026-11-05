@@ -121,28 +121,28 @@ export function HealthGreenCard({ profile }: { profile: InfluencerProfile }) {
         aside={<RiskBadge level={risk.level} />}
       />
       <div className="px-5 pb-5">
-        <div className="relative overflow-hidden rounded-xl bg-brand p-5 text-white">
+        <div className="relative overflow-hidden rounded-xl bg-brand p-5 text-ink">
           <span
             aria-hidden
-            className="pointer-events-none absolute -right-10 -top-16 size-44 rounded-full bg-white/10"
+            className="pointer-events-none absolute -right-10 -top-16 size-44 rounded-full bg-white/20"
           />
           <div className="flex items-center justify-between">
             <span className="flex items-center gap-2">
               <SensoMark tile={false} className="size-6" />
-              <span className="font-display text-base font-bold">SENSO</span>
+              <span className="font-display text-md font-bold tracking-[-0.04em]">senso</span>
             </span>
-            <span className="rounded-full bg-white/15 px-2.5 py-1 label-caps-sm text-white">
+            <span className="rounded-full bg-ink px-2.5 py-1 label-caps-sm text-ink-inverse">
               {measured ? HEALTH_BAND_LABEL[health.band].split(" ")[0] : "Unscored"}
             </span>
           </div>
-          <p className="mt-6 text-xs font-medium text-white/70">Health</p>
+          <p className="mt-6 text-xs font-medium text-ink/80">Health</p>
           <p className="mt-1 flex items-baseline gap-1.5">
             <span className="font-num text-hero font-bold leading-none tracking-tight">
               {measured ? Math.round(health.value) : NO_VALUE}
             </span>
-            <span className="font-num text-lg font-semibold text-white/70">/100</span>
+            <span className="font-num text-lg font-semibold text-ink/80">/100</span>
           </p>
-          <div className="mt-6 flex items-center justify-between text-xs font-medium text-white/75">
+          <div className="mt-6 flex items-center justify-between text-xs font-medium text-ink/80">
             <span className="font-num tracking-widest">
               •••• {Math.round(health.weightCovered * 100)}% measurable
             </span>

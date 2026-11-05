@@ -1,23 +1,22 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Plus_Jakarta_Sans } from "next/font/google";
+import { Inter, Urbanist } from "next/font/google";
 import "./globals.css";
 import { QueryProvider } from "@/components/query-provider";
 
 /**
- * Two voices with non-overlapping jobs.
+ * Two voices with non-overlapping jobs (CLAUDE.md D51).
  *
- * Plus Jakarta Sans sets every heading and — the decision that matters —
- * every numeral. It ships tabular figures, so a metric column aligns without
- * a companion monospace, and its rounded geometry is what makes a score read
- * as friendly rather than clinical.
+ * Urbanist sets every heading — large, light and tightly tracked, the
+ * editorial voice of the marketing site and of page titles in the app.
  *
- * Inter carries interface text, where the job is to disappear: it stays
- * legible at 12px in a dense table and never competes with the display voice.
+ * Inter carries interface text and every numeral: it stays legible at 12px
+ * in a dense table, and its tabular figures keep a metric column aligned,
+ * which Urbanist's proportional digits would not.
  */
-const display = Plus_Jakarta_Sans({
-  variable: "--font-jakarta",
+const display = Urbanist({
+  variable: "--font-urbanist",
   subsets: ["latin"],
-  weight: ["500", "600", "700", "800"],
+  weight: ["400", "500", "600", "700", "800"],
   display: "swap",
 });
 
@@ -46,7 +45,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   // Duplicates --color-canvas in globals.css by value — Next metadata cannot
   // read a CSS custom property. Change both together.
-  themeColor: "#e6e3ec",
+  themeColor: "#f6f6f5",
 };
 
 export default function RootLayout({

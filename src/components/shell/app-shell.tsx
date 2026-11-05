@@ -82,7 +82,7 @@ export function AppShell({
     <div className="min-h-dvh bg-ground p-2 sm:p-3">
       <a
         href="#main"
-        className="sr-only-focusable absolute left-3 top-3 z-50 rounded-full bg-brand px-4 py-2 text-base font-semibold text-white"
+        className="sr-only-focusable absolute left-3 top-3 z-50 rounded-full bg-brand px-4 py-2 text-base font-semibold text-ink"
       >
         Skip to content
       </a>

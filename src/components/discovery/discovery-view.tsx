@@ -277,7 +277,7 @@ export function DiscoveryView({
                     <SlidersHorizontal className="size-4" aria-hidden />
                     Filters
                     {activeFilters > 0 && (
-                      <span className="rounded-full bg-brand px-1.5 font-num text-xs text-white">
+                      <span className="rounded-full bg-brand px-1.5 font-num text-xs text-ink">
                         {activeFilters}
                       </span>
                     )}
@@ -308,7 +308,7 @@ export function DiscoveryView({
                 <SlidersHorizontal className="size-4" aria-hidden />
                 Filters
                 {activeFilters > 0 && (
-                  <span className="rounded-full bg-brand px-1.5 font-num text-xs text-white">
+                  <span className="rounded-full bg-brand px-1.5 font-num text-xs text-ink">
                     {activeFilters}
                   </span>
                 )}
@@ -415,7 +415,7 @@ export function DiscoveryView({
                           className={cn(
                             "press h-8 rounded-full px-3.5 text-sm font-semibold",
                             active
-                              ? "bg-brand text-white shadow-brand"
+                              ? "bg-ink text-ink-inverse"
                               : "bg-sunken text-ink-muted hover:bg-sunken-strong hover:text-ink",
                           )}
                         >

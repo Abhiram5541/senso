@@ -67,14 +67,14 @@ export function SidebarNav({
                   "press group relative flex items-center gap-3 rounded-lg px-3.5 py-2.5 text-base",
                   collapsed && "size-10 justify-center px-0",
                   active
-                    ? "bg-brand font-semibold text-white shadow-brand"
+                    ? "bg-brand font-semibold text-ink shadow-brand"
                     : "font-medium text-ink-muted hover:bg-brand-softer hover:text-brand-ink",
                 )}
               >
                 <item.icon
                   className={cn(
                     "size-[1.125rem] shrink-0 transition-colors",
-                    active ? "text-white" : "text-ink-subtle group-hover:text-brand-ink",
+                    active ? "text-ink" : "text-ink-subtle group-hover:text-brand-ink",
                   )}
                   aria-hidden
                 />

@@ -60,6 +60,36 @@ export function landingCreators(): { hero: InfluencerProfile | null; rows: Speci
   return { hero, rows: picked.map(toSpecimenShape) };
 }
 
+/**
+ * Creators a visitor recognises on sight, for the hero stage. Chosen by name,
+ * not by score, so the list is fixed rather than ranked — but every figure
+ * shown beside them is still the application's own reading, and a creator
+ * missing from the database, unscored or without a photo is simply skipped.
+ * YouTube channels only: Instagram's CDN links expire, and a hero that
+ * renders a broken image is worse than one with fewer faces.
+ */
+const FEATURED_IDS = [
+  "yt_UCBJycsmduvYEL83R_U4JriQ", // Marques Brownlee
+  "yt_UCX6OQ3DkcsbYNE6H8uQQuVA", // MrBeast
+  "yt_UCY1kMZp36IQSyNx_9h4mpCg", // Mark Rober
+  "yt_UCj22tfcQrWG7EMEKS0qLeEg", // CarryMinati
+  "yt_UCq8DICunczvLuJJq414110A", // Zach King
+  "yt_UCPNxhDvTcytIdvwXWAm43cA", // Selena Gomez
+  "yt_UC-lHJZR3Gqxm24_Vd_AJ5Yw", // PewDiePie
+  "yt_UCRijo3ddMTht_IHyNSNXpNQ", // Dude Perfect
+  "yt_UCHnyfMqiRRG1u-2MsSQLbXA", // Veritasium
+  "yt_UC86suRFnqiw8zN6LIYxddYQ", // Khaby Lame
+  "yt_UCXuqSBlHAE6Xw-yeJA0Tunw", // Linus Tech Tips
+  "yt_UCqwUrj10mAEsqezcItqvwEw", // BB Ki Vines
+];
+
+export function featuredCreators(): SpecimenCreator[] {
+  const byId = new Map(allSummaries().map((s) => [s.id, s]));
+  return FEATURED_IDS.map((id) => byId.get(id))
+    .filter((s): s is InfluencerSummary => !!s && s.healthScore !== null && s.avatarUrl !== null)
+    .map(toSpecimenShape);
+}
+
 function toSpecimenShape(s: InfluencerSummary): SpecimenCreator {
   return {
     id: s.id,
