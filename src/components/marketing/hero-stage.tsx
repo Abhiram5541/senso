@@ -6,6 +6,7 @@ import { cn } from "@/lib/class-names";
 import { healthBand } from "@/lib/contracts/score";
 import { formatCompact } from "@/lib/format";
 import { SensoMark } from "@/components/shell/logo";
+import { avatarSrc } from "@/components/ui/avatar";
 import type { SpecimenCreator } from "./specimen";
 
 /* ---------------------------------------------------------------------------
@@ -59,7 +60,7 @@ export function HeroStage({ creators, indexed }: { creators: SpecimenCreator[]; 
           // eslint-disable-next-line @next/next/no-img-element
           <img
             key={c.id ?? c.handle}
-            src={c.avatarUrl!}
+            src={avatarSrc(c.avatarUrl!, 320)}
             alt={index === active ? c.name : ""}
             referrerPolicy="no-referrer"
             loading={index < 2 ? "eager" : "lazy"}
@@ -108,7 +109,7 @@ export function HeroStage({ creators, indexed }: { creators: SpecimenCreator[]; 
         </span>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={creator.avatarUrl!}
+          src={avatarSrc(creator.avatarUrl!, 36)}
           alt=""
           referrerPolicy="no-referrer"
           className="size-9 shrink-0 rounded-full object-cover"
@@ -128,7 +129,7 @@ export function HeroStage({ creators, indexed }: { creators: SpecimenCreator[]; 
             // eslint-disable-next-line @next/next/no-img-element
             <img
               key={c.id ?? c.handle}
-              src={c.avatarUrl!}
+              src={avatarSrc(c.avatarUrl!, 40)}
               alt=""
               referrerPolicy="no-referrer"
               className="-ml-2.5 size-10 rounded-full object-cover ring-2 ring-instrument first:ml-0"

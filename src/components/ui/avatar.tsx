@@ -68,9 +68,16 @@ const PX: Record<keyof typeof SIZES, number> = {
  *
  * Only a `=s<digits>` segment is rewritten, so a CDN that does not use the
  * convention — Instagram's, for one — is passed through untouched.
+ *
+ * `size` is one of this component's own sizes, or a plain number of CSS
+ * pixels for a surface that sizes its own image. The landing page is the
+ * reason the second form exists: it renders avatars as raw `<img>` to keep
+ * arbitrary CDN hosts out of the optimiser, at edges from a 36px chip to a
+ * 320px card, none of which map onto the avatar ladder.
  */
-export function avatarSrc(src: string, size: keyof typeof SIZES): string {
-  return src.replace(/=s\d+(?=-|$)/, `=s${PX[size] * 2}`);
+export function avatarSrc(src: string, size: keyof typeof SIZES | number): string {
+  const edge = typeof size === "number" ? size : PX[size];
+  return src.replace(/=s\d+(?=-|$)/, `=s${edge * 2}`);
 }
 
 export function Avatar({

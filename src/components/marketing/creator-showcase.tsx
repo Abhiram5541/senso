@@ -1,6 +1,7 @@
 import { Activity, PlayCircle, UserRound, Zap } from "lucide-react";
 import { cn } from "@/lib/class-names";
 import { healthBand } from "@/lib/contracts/score";
+import { avatarSrc } from "@/components/ui/avatar";
 import type { SpecimenCreator } from "./specimen";
 
 /* ---------------------------------------------------------------------------
@@ -81,7 +82,7 @@ function CreatorCard({ creator }: { creator: SpecimenCreator }) {
             avoids an optimisation pass over arbitrary hosts (as Avatar does). */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={creator.avatarUrl!}
+          src={avatarSrc(creator.avatarUrl!, 320)}
           alt=""
           loading="lazy"
           referrerPolicy="no-referrer"

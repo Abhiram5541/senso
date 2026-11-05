@@ -5,6 +5,7 @@ import { databaseStats } from "@/server/repositories/ops-repository";
 import { summariesComplete } from "@/server/repositories/influencer-repository";
 import { CtaPill, MarketingChrome } from "@/components/shell/marketing-chrome";
 import { CreatorShowcase } from "@/components/marketing/creator-showcase";
+import { avatarSrc } from "@/components/ui/avatar";
 import { HeroStage } from "@/components/marketing/hero-stage";
 import { CountUp } from "@/components/marketing/count-up";
 import { collectedAgo, featuredCreators, landingCreators, landingFacets, landingQualityPoints } from "@/components/marketing/live";
@@ -270,7 +271,7 @@ export default function LandingPage() {
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={face.avatarUrl!}
+                    src={avatarSrc(face.avatarUrl!, 40)}
                     alt=""
                     loading="lazy"
                     referrerPolicy="no-referrer"

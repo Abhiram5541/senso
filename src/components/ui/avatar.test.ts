@@ -28,6 +28,12 @@ describe("avatarSrc", () => {
     );
   });
 
+  it("takes a pixel edge for a surface that sizes its own image", () => {
+    // The landing page's raw <img> sites: a 40px marquee face and a 320px card.
+    expect(avatarSrc(google, 40)).toContain("=s80-c-k-");
+    expect(avatarSrc(google, 320)).toContain("=s640-c-k-");
+  });
+
   it("leaves a CDN that does not use the convention alone", () => {
     const instagram = "https://scontent.cdninstagram.com/v/t51.2885-19/abc.jpg";
     expect(avatarSrc(instagram, "lg")).toBe(instagram);
