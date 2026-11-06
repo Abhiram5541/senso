@@ -89,7 +89,7 @@ export default async function ClaimPage({
         {configured ? (
           <a
             href="/api/internal/claim/youtube/start"
-            className="press mt-6 inline-flex h-12 items-center gap-2 rounded-full bg-brand px-5 text-md font-semibold text-ink-inverse hover:bg-brand-active"
+            className="press mt-6 inline-flex h-12 items-center gap-2 rounded-full bg-brand px-5 text-md font-semibold text-ink hover:bg-brand-active"
           >
             Connect YouTube
             <ArrowRight className="size-4" aria-hidden />

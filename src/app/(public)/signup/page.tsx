@@ -123,7 +123,7 @@ function AccountCard({
           for the consent to mean anything. */}
       <a
         href={`/api/internal/auth/google/start?intent=${intent}`}
-        className="press mt-6 inline-flex h-12 items-center justify-center gap-2 rounded-full bg-brand px-5 text-md font-semibold text-ink-inverse hover:bg-brand-active"
+        className="press mt-6 inline-flex h-12 items-center justify-center gap-2 rounded-full bg-brand px-5 text-md font-semibold text-ink hover:bg-brand-active"
       >
         {cta}
         <ArrowRight className="size-4" aria-hidden />
