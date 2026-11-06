@@ -71,9 +71,28 @@ function credentials(): { clientId: string; clientSecret: string } {
   return { clientId, clientSecret };
 }
 
+/**
+ * The origin Google must be told to come back to.
+ *
+ * `APP_URL` first, and the request's own origin only as a fallback. Behind a
+ * reverse proxy the Node process sees the address it is actually bound to —
+ * in production that is `https://localhost:3005`, because nginx terminates
+ * TLS and forwards to the port. Deriving the redirect from the request sent
+ * Google a localhost callback it would never accept, and the failure is not
+ * visible locally, where the two happen to be the same thing.
+ *
+ * Both the authorization request and the token exchange call this, so they
+ * cannot disagree: Google rejects an exchange whose redirect_uri differs by
+ * so much as a trailing slash from the one the code was issued for.
+ */
+export function publicOrigin(requestOrigin: string): string {
+  const configured = process.env.APP_URL?.trim().replace(/\/+$/, "");
+  return configured || requestOrigin;
+}
+
 /** Must match a redirect URI registered on the Google client, exactly. */
 export function redirectUri(origin: string): string {
-  return `${origin}/api/internal/auth/google/callback`;
+  return `${publicOrigin(origin)}/api/internal/auth/google/callback`;
 }
 
 function stateSecret(): string {

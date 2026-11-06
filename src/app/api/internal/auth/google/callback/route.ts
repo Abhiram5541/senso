@@ -7,6 +7,7 @@ import {
   GoogleAuthRefused,
   GoogleAuthUnavailable,
   exchangeCode,
+  publicOrigin,
   roleFor,
   verifyState,
 } from "@/server/services/google-auth-service";
@@ -24,7 +25,8 @@ import {
  */
 export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams;
-  const origin = request.nextUrl.origin;
+  // Behind nginx the request's own origin is https://localhost:3005.
+  const origin = publicOrigin(request.nextUrl.origin);
   const fail = (reason: string) =>
     NextResponse.redirect(new URL(`/signup?error=${encodeURIComponent(reason)}`, origin));
 

@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import { issueState, roleFor, verifyState } from "./google-auth-service";
 import { issueClaimState, verifyClaimState } from "./claim-service";
 
@@ -56,5 +56,40 @@ describe("claim state is not interchangeable with sign-in state", () => {
 
   it("round-trips the user id it was issued for", () => {
     expect(verifyClaimState(issueClaimState("usr_42"))).toEqual({ userId: "usr_42" });
+  });
+});
+
+/*
+ * Production sits behind nginx, where the Node process sees its own bind
+ * address. Deriving the OAuth redirect from the request sent Google a
+ * localhost callback it will never accept — and the mistake is invisible on
+ * a laptop, where the two origins happen to agree.
+ */
+describe("publicOrigin", () => {
+  const original = process.env.APP_URL;
+  afterEach(() => {
+    if (original === undefined) delete process.env.APP_URL;
+    else process.env.APP_URL = original;
+  });
+
+  it("prefers APP_URL over whatever the proxy handed the process", async () => {
+    process.env.APP_URL = "https://senso360.com";
+    const { publicOrigin, redirectUri } = await import("./google-auth-service");
+    expect(publicOrigin("https://localhost:3005")).toBe("https://senso360.com");
+    expect(redirectUri("https://localhost:3005")).toBe(
+      "https://senso360.com/api/internal/auth/google/callback",
+    );
+  });
+
+  it("strips a trailing slash, which Google would treat as a different URI", async () => {
+    process.env.APP_URL = "https://senso360.com/";
+    const { redirectUri } = await import("./google-auth-service");
+    expect(redirectUri("x")).toBe("https://senso360.com/api/internal/auth/google/callback");
+  });
+
+  it("falls back to the request origin when APP_URL is unset", async () => {
+    delete process.env.APP_URL;
+    const { publicOrigin } = await import("./google-auth-service");
+    expect(publicOrigin("http://localhost:3000")).toBe("http://localhost:3000");
   });
 });

@@ -3,6 +3,7 @@ import {
   GoogleAuthUnavailable,
   authorizationUrl,
   issueState,
+  publicOrigin,
 } from "@/server/services/google-auth-service";
 import { checkRateLimit } from "@/server/services/rate-limit";
 
@@ -22,7 +23,7 @@ export async function GET(request: NextRequest) {
   const key = request.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "unknown";
   const limit = checkRateLimit(`google-start:${key}`, { max: 10, windowMs: 60_000 });
   if (!limit.allowed) {
-    return NextResponse.redirect(new URL("/signup?error=rate_limited", request.nextUrl.origin));
+    return NextResponse.redirect(new URL("/signup?error=rate_limited", publicOrigin(request.nextUrl.origin)));
   }
 
   const raw = request.nextUrl.searchParams.get("intent");
@@ -35,7 +36,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     if (error instanceof GoogleAuthUnavailable) {
       return NextResponse.redirect(
-        new URL("/signup?error=unconfigured", request.nextUrl.origin),
+        new URL("/signup?error=unconfigured", publicOrigin(request.nextUrl.origin)),
       );
     }
     throw error;

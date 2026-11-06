@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { requirePageSession } from "@/server/auth/rbac";
 import { startClaim } from "@/server/services/claim-service";
 import { connectionConfigured } from "@/server/services/connection-service";
+import { publicOrigin } from "@/server/services/google-auth-service";
 
 /**
  * Starts the claim for a signed-in creator who owns no record yet.
@@ -22,7 +23,7 @@ export async function GET(request: NextRequest) {
 
   const back = (status: string) =>
     NextResponse.redirect(
-      new URL(`/creator/claim?connection=${status}`, request.nextUrl.origin),
+      new URL(`/creator/claim?connection=${status}`, publicOrigin(request.nextUrl.origin)),
     );
 
   if (user.role !== "influencer") return back("not_creator");

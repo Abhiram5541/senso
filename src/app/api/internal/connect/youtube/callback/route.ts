@@ -4,6 +4,7 @@ import { getSession, setSessionCookie } from "@/server/auth/session";
 import { findOrg, findUserByEmail, toSessionUser } from "@/server/repositories/user-repository";
 import { ClaimRefused, completeClaim, verifyClaimState } from "@/server/services/claim-service";
 import { ConnectionRefused, completeConnection } from "@/server/services/connection-service";
+import { publicOrigin } from "@/server/services/google-auth-service";
 
 /**
  * Where Google sends the creator back.
@@ -27,7 +28,7 @@ import { ConnectionRefused, completeConnection } from "@/server/services/connect
 export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams;
   const back = (status: string, detail?: string) => {
-    const url = new URL("/creator/connections", request.nextUrl.origin);
+    const url = new URL("/creator/connections", publicOrigin(request.nextUrl.origin));
     url.searchParams.set("connection", status);
     if (detail) url.searchParams.set("detail", detail);
     return NextResponse.redirect(url);
