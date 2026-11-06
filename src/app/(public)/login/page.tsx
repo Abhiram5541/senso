@@ -135,7 +135,7 @@ export default async function LoginPage({
 
           <p className="text-base text-ink-muted">
             New to SENSO?{" "}
-            <Link href="/register" className="rounded font-medium text-brand-ink hover:underline">
+            <Link href="/signup" className="rounded font-medium text-brand-ink hover:underline">
               Create an account
             </Link>
           </p>

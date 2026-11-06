@@ -221,6 +221,114 @@ export async function createUser(input: {
   return user;
 }
 
+/**
+ * The sentinel stored where a password hash would be, for an account that
+ * signs in with Google.
+ *
+ * It is not a hash of anything, and `verifyPassword` cannot return true for
+ * it, so `authenticate` rejects every password attempt against these accounts
+ * without needing a branch of its own. That matters: an account with no
+ * password must not be an account any password opens, and the safest way to
+ * guarantee that is to make the stored value one no hash function produces.
+ */
+const GOOGLE_ACCOUNT = "google-oauth:no-password";
+
+export function isGoogleAccount(user: UserRecord): boolean {
+  return user.passwordHash === GOOGLE_ACCOUNT;
+}
+
+/**
+ * Finds the account behind a verified Google identity, or creates it.
+ *
+ * Matching is by email, which is sound only because the caller has had the
+ * address verified by Google — `exchangeCode` refuses an unverified one. An
+ * email somebody merely typed must never reach this function.
+ *
+ * An existing account is returned as-is and is never upgraded or re-roled:
+ * if a client member signs in with Google at the creator door, they get their
+ * own workspace, not a second identity. Creating a second account for an
+ * address that already has one is how a person ends up locked out of their
+ * real data.
+ *
+ * A creator joins the shared creator organisation rather than getting one of
+ * their own: they have no colleagues, no seats to manage and no billing, and
+ * an org per creator would make the org table a second user table.
+ */
+export async function findOrCreateGoogleUser(input: {
+  email: string;
+  name: string;
+  avatarUrl: string | null;
+  role: Role;
+  /** Only used when the role needs an organisation created for it. */
+  orgName?: string;
+}): Promise<{ user: UserRecord; org: Org; created: boolean }> {
+  const existing = await findUserByEmail(input.email);
+  if (existing) {
+    const org = await findOrg(existing.orgId);
+    if (!org) throw new Error("The account's organisation is missing.");
+    if (existing.status !== "active") {
+      throw new Error("That account is suspended. Contact SENSO support.");
+    }
+    // Keep the picture fresh, but never overwrite a name the person edited
+    // here with whatever Google currently holds.
+    if (input.avatarUrl && existing.avatarUrl !== input.avatarUrl) {
+      existing.avatarUrl = input.avatarUrl;
+      persist("users", [existing]);
+    }
+    return { user: existing, org, created: false };
+  }
+
+  const org =
+    input.role === "influencer"
+      ? ((await findOrg("org_creators")) ??
+        (await createOrg({ name: "Creator accounts", kind: "client", plan: "free" })))
+      : await createOrg({
+          name: input.orgName?.trim() || input.name.trim(),
+          kind: "client",
+          plan: "free",
+        });
+
+  const user: UserRecord = {
+    id: `usr_${Date.now().toString(36)}${randomSuffix()}`,
+    email: input.email.trim().toLowerCase(),
+    name: input.name.trim(),
+    avatarUrl: input.avatarUrl,
+    role: input.role,
+    orgId: org.id,
+    influencerId: null,
+    passwordHash: GOOGLE_ACCOUNT,
+    createdAt: new Date().toISOString(),
+    lastLoginAt: new Date().toISOString(),
+    status: "active",
+  };
+  (await load()).push(user);
+  org.seatsUsed += 1;
+  persist("users", [user]);
+  persist("orgs", [org]);
+  return { user, org, created: true };
+}
+
+/** Two accounts created in the same millisecond would otherwise collide. */
+function randomSuffix(): string {
+  return Math.floor(Math.random() * 1296)
+    .toString(36)
+    .padStart(2, "0");
+}
+
+/**
+ * Points a creator account at the record it owns.
+ *
+ * Called only after ownership has been proved by an OAuth grant against the
+ * platform. Nothing else may set this field: it is what every creator-portal
+ * read is scoped by.
+ */
+export async function linkInfluencer(userId: string, influencerId: string): Promise<void> {
+  const user = (await load()).find((entry) => entry.id === userId);
+  if (!user) throw new Error("No such user.");
+  user.influencerId = influencerId;
+  persist("users", [user]);
+}
+
 /** Replaces a user's password. For an admin reset; the old one is not needed. */
 export async function setUserPassword(userId: string, password: string): Promise<void> {
   const user = (await load()).find((entry) => entry.id === userId);

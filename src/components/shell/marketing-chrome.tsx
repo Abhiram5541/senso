@@ -61,11 +61,11 @@ export function MarketingChrome({ children }: { children: React.ReactNode }) {
             >
               Sign in
             </Link>
-            <CtaPill href="/register" size="sm">
+            <CtaPill href="/signup" size="sm">
               {/* The full label does not fit beside the wordmark and Sign in
                   at 375px, and the page must never scroll sideways. */}
-              <span className="sm:hidden">Demo</span>
-              <span className="hidden sm:inline">Request a demo</span>
+              <span className="sm:hidden">Join</span>
+              <span className="hidden sm:inline">Get started</span>
             </CtaPill>
           </div>
         </div>
@@ -100,6 +100,7 @@ export function MarketingChrome({ children }: { children: React.ReactNode }) {
                 links={[
                   { href: "/pricing", label: "Pricing" },
                   { href: "/login", label: "Sign in" },
+                  { href: "/signup", label: "Create an account" },
                   { href: "/register", label: "Request a demo" },
                 ]}
               />

@@ -4,6 +4,7 @@ import { ConnectorUnavailable } from "@/server/connectors/youtube";
 import {
   authorizationUrl,
   exchangeCode,
+  type OAuthTokens,
   refreshAccessToken,
   youtubeOAuthConfig,
 } from "@/server/connectors/youtube/oauth";
@@ -129,20 +130,7 @@ export async function completeConnection(
     );
   }
 
-  const grant: RawOAuthGrant = {
-    accountId: account.id,
-    influencerId: verified.influencerId,
-    platform: "youtube",
-    platformAccountId: owned.channelId,
-    sealedAccessToken: sealToken(tokens.accessToken),
-    sealedRefreshToken: tokens.refreshToken ? sealToken(tokens.refreshToken) : null,
-    expiresAt: tokens.expiresAt,
-    scopes: tokens.scopes,
-    grantedAt: new Date().toISOString(),
-    needsReauth: false,
-  };
-  await upsertGrant(grant);
-  await markConnected(verified.influencerId, account.id, true);
+  await completeConnectionFor(verified.influencerId, owned, tokens);
 
   return {
     influencerId: verified.influencerId,
@@ -152,8 +140,13 @@ export async function completeConnection(
   };
 }
 
-/** Reads the channel the token's owner controls, via `mine=true`. */
-async function fetchOwnChannel(
+/** Reads the channel the token's owner controls, via `mine=true`.
+ *
+ *  Exported because `claim-service` asks the same question from the other
+ *  direction — "which channel does this account own, and which record is
+ *  that?" — and a second copy of this call is a second place for the
+ *  identity check to drift. */
+export async function fetchOwnChannel(
   accessToken: string,
 ): Promise<{ channelId: string; title: string } | null> {
   const response = await fetch(
@@ -174,6 +167,43 @@ async function fetchOwnChannel(
   };
   const item = body.items?.[0];
   return item ? { channelId: item.id, title: item.snippet.title } : null;
+}
+
+/**
+ * Stores the grant and flips the record onto the connected path.
+ *
+ * Split out of `completeConnection` so `claim-service` can finish the same
+ * way after deciding which record the consenting channel belongs to. Both
+ * callers have already proved ownership by the time they arrive here — this
+ * function performs no identity check and must never be called from
+ * anywhere that has not done one.
+ */
+export async function completeConnectionFor(
+  influencerId: string,
+  owned: { channelId: string; title: string },
+  tokens: OAuthTokens,
+): Promise<void> {
+  const account = readRecords().accounts.find(
+    (item) => item.influencerId === influencerId && item.isPrimary,
+  );
+  if (!account) {
+    throw new ConnectionRefused("no_channel", "No tracked account for this creator.");
+  }
+
+  const grant: RawOAuthGrant = {
+    accountId: account.id,
+    influencerId,
+    platform: "youtube",
+    platformAccountId: owned.channelId,
+    sealedAccessToken: sealToken(tokens.accessToken),
+    sealedRefreshToken: tokens.refreshToken ? sealToken(tokens.refreshToken) : null,
+    expiresAt: tokens.expiresAt,
+    scopes: tokens.scopes,
+    grantedAt: new Date().toISOString(),
+    needsReauth: false,
+  };
+  await upsertGrant(grant);
+  await markConnected(influencerId, account.id, true);
 }
 
 /** Flips the stored account and creator onto the connected/verified path. */
