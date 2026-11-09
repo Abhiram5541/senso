@@ -81,9 +81,17 @@ export async function fetchChannelAnalytics(
   });
 
   if (!response.ok) {
-    // 403 here usually means the grant predates the analytics scope rather
-    // than that anything is broken, so it is reported as a reauth rather than
-    // as an outage.
+    // A 403 from this endpoint has two very different causes — a grant that
+    // predates the analytics scope, and the Analytics API not being enabled
+    // on the Cloud project — and the UI shows the same "reconnect" notice for
+    // both. Log the upstream reason so the difference is visible to whoever
+    // has to fix it. The body is Google's own error envelope: it carries a
+    // reason code and a message, never the token.
+    const detail = (await response.text().catch(() => "")).slice(0, 300);
+    console.error(
+      `[youtube-analytics] HTTP ${response.status} from reports.query: ${detail}`,
+    );
+
     throw new ConnectorUnavailable(
       "youtube",
       response.status === 401 || response.status === 403 ? "forbidden" : "upstream_error",
