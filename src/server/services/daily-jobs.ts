@@ -169,18 +169,31 @@ export async function runDiscoveryJob(now = new Date()): Promise<HarvestReport |
 /**
  * Keeps stored metadata inside the thirty days YouTube allows.
  *
- * Runs after discovery and the snapshot rather than before: those two are
- * what grow and refresh the index, and a day where the quota runs out is a
- * day the retention pass can safely skip — a row at thirty-one days is a
- * compliance problem to fix tomorrow, while a stalled harvest is a product
- * that stops working. The pass is cheap enough that this ordering rarely
- * costs it anything: fifty videos per quota unit, a few hundred units a day
- * to keep the whole corpus inside the window.
+ * Runs *before* the snapshot, on a reserved slice, and the first version of
+ * this got it wrong. It ran last, on the reasoning that a stalled harvest is
+ * worse than a row at thirty-one days — which is true, and irrelevant,
+ * because the snapshot never leaves anything behind. Refreshing ~17.9k
+ * accounts costs about 35,000 units against the ~5,500 left after discovery
+ * takes its capped slice, so the snapshot exhausts the quota every day and
+ * records `stoppedEarly: quota exhausted`. A job queued after it gets
+ * nothing, every day, permanently: the compliance pass would have been
+ * deployed and never executed once.
+ *
+ * So it takes its slice ahead of the snapshot, which is what discovery
+ * already does for the same reason (D50). The slice is small enough that the
+ * snapshot barely feels it — fifty videos per quota unit means a few hundred
+ * units keeps the whole corpus inside its window — and a compliance duty
+ * that only runs on days with spare quota is not a duty that has been met.
  */
 export async function runRetentionJob(now = new Date()): Promise<RetentionReport | null> {
   const day = today(now);
   if ((await lastRun("retention"))?.ranOn === day) return null;
-  const report = await refreshAgedContent({ budgetMs: 10 * 60_000 });
+  // ~300 units: 3% of the daily budget, and enough to hold a 437k-row
+  // corpus inside a thirty-day window once the backlog is cleared.
+  const report = await refreshAgedContent({
+    budgetMs: 10 * 60_000,
+    maxVideos: Number(process.env.SENSO_RETENTION_VIDEOS_PER_DAY ?? 15_000),
+  });
   await recordRun({ name: "retention", ranOn: day, report });
 
   if (report.withheldReason) {
@@ -239,10 +252,12 @@ export function startScheduler(): void {
         // what is left and resumes next tick when the quota cuts it short.
         const discovery = await runDiscoveryJob(now);
         if (discovery) console.log(`[jobs] discover: ${discovery.ingested} new creators`);
-        const snapshot = await runSnapshotJob(now);
-        if (snapshot) console.log(`[jobs] snapshot: ${snapshot.ingested} read, ${snapshot.remaining} remaining`);
+        // Retention before the snapshot: the snapshot always exhausts what
+        // is left, so anything queued behind it never runs at all.
         const retention = await runRetentionJob(now);
         if (retention) console.log(`[jobs] retention: ${retention.refreshed} refreshed, ${retention.removed} removed, ${retention.remaining} remaining`);
+        const snapshot = await runSnapshotJob(now);
+        if (snapshot) console.log(`[jobs] snapshot: ${snapshot.ingested} read, ${snapshot.remaining} remaining`);
       }
       // Scheduled reports are queued rather than generated here: the daily
       // clock decides *what is due*, the queue decides when it runs.
