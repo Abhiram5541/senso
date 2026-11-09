@@ -91,6 +91,15 @@ export interface RawContent {
   mentions?: string[];
   /** YouTube's own video category id. Observed platform classification. */
   platformCategoryId: string | null;
+  /**
+   * When this row's metadata was last re-read from the platform.
+   *
+   * YouTube caps non-statistic API Data at thirty days unless it is refreshed,
+   * so the retention pass needs to know a row's age. Optional because every
+   * row written before the pass existed has never been re-read — and absent
+   * is the honest value for those, not a guess at their ingestion date.
+   */
+  refreshedAt?: string;
 }
 
 /**

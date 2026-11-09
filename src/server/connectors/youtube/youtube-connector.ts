@@ -418,6 +418,21 @@ export async function fetchRecentVideos(
     if (!pageToken) break;
   }
 
+  return fetchVideosByIds(ids);
+}
+
+/**
+ * Reads videos by id, fifty at a time.
+ *
+ * `videos.list` costs one quota unit per call regardless of how many ids it
+ * carries, which is what makes a full metadata refresh of the corpus
+ * affordable (D15's reasoning, applied to retention rather than discovery).
+ *
+ * An id that comes back absent is not an error: the video has been deleted,
+ * made private or region-blocked. The caller decides what that means — for
+ * the retention pass it means the stored row must go.
+ */
+export async function fetchVideosByIds(ids: string[]): Promise<YouTubeVideo[]> {
   const videos: YouTubeVideo[] = [];
   for (let i = 0; i < ids.length; i += 50) {
     const { items } = await call(

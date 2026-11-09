@@ -18,6 +18,7 @@ import {
 } from "./harvest-service";
 import { sendAlertDigests, type DigestReport } from "./digest-service";
 import { sendOpsEvent } from "./notification-service";
+import { refreshAgedContent, type RetentionReport } from "./retention-service";
 
 /* ---------------------------------------------------------------------------
  * The two things the database needs done every day, and a clock to do them.
@@ -165,6 +166,32 @@ export async function runDiscoveryJob(now = new Date()): Promise<HarvestReport |
   return report;
 }
 
+/**
+ * Keeps stored metadata inside the thirty days YouTube allows.
+ *
+ * Runs after discovery and the snapshot rather than before: those two are
+ * what grow and refresh the index, and a day where the quota runs out is a
+ * day the retention pass can safely skip — a row at thirty-one days is a
+ * compliance problem to fix tomorrow, while a stalled harvest is a product
+ * that stops working. The pass is cheap enough that this ordering rarely
+ * costs it anything: fifty videos per quota unit, a few hundred units a day
+ * to keep the whole corpus inside the window.
+ */
+export async function runRetentionJob(now = new Date()): Promise<RetentionReport | null> {
+  const day = today(now);
+  if ((await lastRun("retention"))?.ranOn === day) return null;
+  const report = await refreshAgedContent({ budgetMs: 10 * 60_000 });
+  await recordRun({ name: "retention", ranOn: day, report });
+
+  if (report.remaining > 0 && report.oldestAgeDays !== null && report.oldestAgeDays > 30) {
+    await sendOpsEvent("Content retention falling behind", [
+      `${report.remaining} rows past the refresh age, oldest ${report.oldestAgeDays} days.`,
+      "Stored YouTube metadata older than 30 days breaches the developer policy.",
+    ]);
+  }
+  return report;
+}
+
 /** Emails each client user the alerts that are new since their last digest. */
 export async function runDigestJob(now = new Date()): Promise<DigestReport | null> {
   const day = today(now);
@@ -207,6 +234,8 @@ export function startScheduler(): void {
         if (discovery) console.log(`[jobs] discover: ${discovery.ingested} new creators`);
         const snapshot = await runSnapshotJob(now);
         if (snapshot) console.log(`[jobs] snapshot: ${snapshot.ingested} read, ${snapshot.remaining} remaining`);
+        const retention = await runRetentionJob(now);
+        if (retention) console.log(`[jobs] retention: ${retention.refreshed} refreshed, ${retention.removed} removed, ${retention.remaining} remaining`);
       }
       // Scheduled reports are queued rather than generated here: the daily
       // clock decides *what is due*, the queue decides when it runs.

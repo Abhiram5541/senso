@@ -56,7 +56,15 @@ const FACT_KIND: Record<
     short: "D",
     icon: Sigma,
     className: "text-ink-muted",
-    explain: "Calculated by SENSO from observed values using a published formula.",
+    /* "generated independently by SENSO" is not a turn of phrase. YouTube's
+       derived-metrics policy permits a client to compute its own metrics from
+       API Data only "on the condition that you clearly and prominently label
+       these metrics as generated independently by you and not sourced
+       directly from YouTube's API". A derived figure that reads as something
+       the platform published would breach that, so the wording says whose
+       number it is and whose it is not. */
+    explain:
+      "Generated independently by SENSO from observed values, using a published formula. Not a YouTube metric and not sourced from YouTube's API.",
   },
   estimated: {
     label: "Estimated",

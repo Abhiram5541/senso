@@ -39,6 +39,39 @@ function componentTone(value: number, tone: ScoreTone, invert: boolean): string 
   return tone === "instrument" ? "bg-brand-lift" : "bg-brand";
 }
 
+/**
+ * The attribution line that has to sit with a SENSO score.
+ *
+ * YouTube's derived-metrics policy allows a client to compute its own metrics
+ * from API Data only "on the condition that you clearly and prominently label
+ * these metrics as generated independently by you and not sourced directly
+ * from YouTube's API". A score dial reading 89 beside a channel's real
+ * subscriber count is exactly the case the condition is written for: nothing
+ * on the dial says which of the two numbers YouTube published.
+ *
+ * Kept as one component so the wording cannot drift between the surfaces that
+ * show a score, and so an audit can find every place it appears.
+ */
+export function DerivedNote({
+  tone = "light",
+  className,
+}: {
+  tone?: ScoreTone;
+  className?: string;
+}) {
+  return (
+    <p
+      className={cn(
+        "text-2xs leading-4",
+        tone === "instrument" ? "text-instrument-subtle" : "text-ink-subtle",
+        className,
+      )}
+    >
+      Calculated independently by SENSO. Not a YouTube metric.
+    </p>
+  );
+}
+
 export function ScoreRing({
   value,
   size = 96,

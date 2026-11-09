@@ -19,7 +19,7 @@ import { EmptyState, Notice } from "@/components/ui/states";
 import { StatRow, StatTile } from "@/components/intelligence/stat";
 import { Insight, InsightFeed } from "@/components/intelligence/insight";
 import { Panel, PanelFoot, PanelHead, PanelTitle, RowList } from "@/components/ui/panel";
-import { HEALTH_BAND_LABEL, ScoreRing } from "@/components/intelligence/score";
+import { DerivedNote, HEALTH_BAND_LABEL, ScoreRing } from "@/components/intelligence/score";
 
 export const metadata: Metadata = { title: "Creator overview" };
 export const dynamic = "force-dynamic";
@@ -156,7 +156,10 @@ export default async function CreatorOverviewPage() {
               </span>
             </header>
             <div className="flex flex-wrap items-center gap-5 p-5">
-              <ScoreRing value={scored ? profile.health.value : null} size={124} tone="instrument" />
+              <div className="shrink-0">
+                <ScoreRing value={scored ? profile.health.value : null} size={124} tone="instrument" />
+                <DerivedNote tone="instrument" className="mt-2 max-w-[124px] text-center" />
+              </div>
               <div className="min-w-40 flex-1 space-y-2">
                 <p className="font-display text-stat font-bold leading-tight">
                   {scored ? HEALTH_BAND_LABEL[profile.health.band] : "Not scored"}

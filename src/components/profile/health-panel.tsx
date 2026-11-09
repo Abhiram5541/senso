@@ -11,7 +11,7 @@ import type { AiProfileIntelligence, BenchmarkPosition } from "@/lib/contracts/i
 import { formatRelativeTime } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { InfoHint } from "@/components/ui/overlay";
-import { HEALTH_BAND_LABEL, RiskBadge, ScoreBar, ScoreRing } from "@/components/intelligence/score";
+import { DerivedNote, HEALTH_BAND_LABEL, RiskBadge, ScoreBar, ScoreRing } from "@/components/intelligence/score";
 
 /* ---------------------------------------------------------------------------
  * The SENSO Health readout.
@@ -65,7 +65,10 @@ export function HealthPanel({
 
       <div className="grid gap-x-8 gap-y-6 p-5 lg:grid-cols-[auto_1fr]">
         <div className="flex items-center gap-5">
-          <ScoreRing value={measured ? health.value : null} size={124} tone="instrument" />
+          <div className="shrink-0">
+            <ScoreRing value={measured ? health.value : null} size={124} tone="instrument" />
+            <DerivedNote tone="instrument" className="mt-2 max-w-[124px] text-center" />
+          </div>
           <div className="min-w-0 space-y-2">
             <p className="font-display text-stat font-bold leading-tight">
               {measured ? HEALTH_BAND_LABEL[health.band] : "Not scored"}

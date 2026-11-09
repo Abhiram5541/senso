@@ -343,6 +343,9 @@ export function buildRecord(
       hashtags: extractHashtags(video.description),
       mentions: extractMentions(video.description),
       platformCategoryId: video.categoryId,
+      // Stamped on the way in, so the retention pass can tell a row it has
+      // just written from one ingested before the pass existed.
+      refreshedAt: new Date().toISOString(),
     })),
   };
 }
