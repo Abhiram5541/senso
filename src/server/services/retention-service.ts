@@ -41,6 +41,24 @@ const REFRESH_AT_DAYS = 25;
 /** `videos.list` accepts fifty ids for a single quota unit. */
 const BATCH = 50;
 
+/*
+ * A pass that finds more than this share of its videos missing is not
+ * looking at a wave of deletions; it is looking at something wrong with the
+ * request. A key restricted to the wrong API, a region block on the server's
+ * address, or a malformed id batch all return a 200 with rows simply absent,
+ * which is indistinguishable from "the owner took it down" — except by
+ * volume. Real deletions are a trickle.
+ *
+ * Above the threshold the pass keeps the refreshes and abandons the
+ * deletions, because the cost of being wrong is asymmetric: a stale row
+ * survives until tomorrow, a deleted row is gone and the nightly pg_dump is
+ * the only way back.
+ */
+const MAX_ABSENT_SHARE = 0.2;
+
+/** Set to "false" to refresh without ever deleting, e.g. for a first run. */
+const DELETION_ENABLED = process.env.SENSO_RETENTION_DELETE !== "false";
+
 export interface RetentionReport {
   due: number;
   refreshed: number;
@@ -48,6 +66,9 @@ export interface RetentionReport {
   quotaUnitsSpent: number;
   /** Rows still past the refresh age when the pass ran out of budget. */
   remaining: number;
+  /** Set when deletions were found but withheld, with the reason. */
+  deletionsWithheld: number;
+  withheldReason: string | null;
   oldestAgeDays: number | null;
   stoppedEarly: string | null;
 }
@@ -108,6 +129,8 @@ export async function refreshAgedContent(
     removed: 0,
     quotaUnitsSpent: 0,
     remaining: due.length,
+    deletionsWithheld: 0,
+    withheldReason: null,
     oldestAgeDays: due.length ? Math.round(ageDays(due[0].refreshedAt, now)) : null,
     stoppedEarly: null,
   };
@@ -164,12 +187,31 @@ export async function refreshAgedContent(
     }
   }
 
-  if (changed.size > 0 || removed.size > 0) {
-    await writeBack(changed, removed);
+  // Decide about the deletions only once the whole pass is in, so the
+  // judgement is made against the pass's own rate rather than one unlucky
+  // batch of fifty.
+  const inspected = changed.size + removed.size;
+  const absentShare = inspected > 0 ? removed.size / inspected : 0;
+
+  let deleting = removed;
+  if (!DELETION_ENABLED) {
+    report.deletionsWithheld = removed.size;
+    report.withheldReason = "SENSO_RETENTION_DELETE=false";
+    deleting = new Set();
+  } else if (absentShare > MAX_ABSENT_SHARE) {
+    report.deletionsWithheld = removed.size;
+    report.withheldReason =
+      `${Math.round(absentShare * 100)}% of inspected videos came back absent, over the ` +
+      `${Math.round(MAX_ABSENT_SHARE * 100)}% threshold. Refreshes kept, deletions skipped.`;
+    deleting = new Set();
+  }
+
+  if (changed.size > 0 || deleting.size > 0) {
+    await writeBack(changed, deleting);
   }
 
   report.refreshed = changed.size;
-  report.removed = removed.size;
+  report.removed = deleting.size;
   const still = dueRows(Date.now());
   report.remaining = still.length;
   report.oldestAgeDays = still.length ? Math.round(ageDays(still[0].refreshedAt, Date.now())) : null;

@@ -79,3 +79,29 @@ describe("video id extraction", () => {
     expect(videoIdOf("trailing_")).toBeNull();
   });
 });
+
+/*
+ * The deletion guard. A 200 response with rows simply absent is what both a
+ * deleted video and a misconfigured key look like, and only the volume tells
+ * them apart — so the pass refuses to act on a share that cannot plausibly
+ * be real deletions.
+ */
+describe("deletion guard", () => {
+  const MAX_ABSENT_SHARE = 0.2;
+  const share = (absent: number, refreshed: number) =>
+    absent + refreshed > 0 ? absent / (absent + refreshed) : 0;
+
+  it("allows the trickle of genuine deletions through", () => {
+    expect(share(3, 497) > MAX_ABSENT_SHARE).toBe(false);
+  });
+
+  it("withholds when most of the batch comes back missing", () => {
+    // A key restricted to the wrong API returns this shape, and acting on it
+    // would delete the corpus.
+    expect(share(480, 20) > MAX_ABSENT_SHARE).toBe(true);
+  });
+
+  it("does not divide by zero on an empty pass", () => {
+    expect(share(0, 0)).toBe(0);
+  });
+});

@@ -183,6 +183,13 @@ export async function runRetentionJob(now = new Date()): Promise<RetentionReport
   const report = await refreshAgedContent({ budgetMs: 10 * 60_000 });
   await recordRun({ name: "retention", ranOn: day, report });
 
+  if (report.withheldReason) {
+    await sendOpsEvent("Content retention withheld deletions", [
+      report.withheldReason,
+      `${report.deletionsWithheld} rows were left in place. Check the API key's restrictions and the server's region before the next run.`,
+    ]);
+  }
+
   if (report.remaining > 0 && report.oldestAgeDays !== null && report.oldestAgeDays > 30) {
     await sendOpsEvent("Content retention falling behind", [
       `${report.remaining} rows past the refresh age, oldest ${report.oldestAgeDays} days.`,
