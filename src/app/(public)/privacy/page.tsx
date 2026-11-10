@@ -131,9 +131,9 @@ export default function PrivacyPage() {
                 statistics — views, likes and comment counts — and the scores SENSO derives
                 from them are retained for up to 36 calendar months. Everything else read from
                 the API, including video titles, captions and creator names, is re-read from
-                YouTube on a rolling cycle of under 30 days, so no copy is older than that. A
-                video the API no longer returns has been removed or made private by its owner,
-                and its record is removed from SENSO in turn.
+                YouTube on a rolling cycle: a stored copy that reaches 30 days old is refreshed
+                from the API, or removed if the API no longer returns it, which is how SENSO
+                learns that a video has been deleted or made private by its owner.
               </p>
             </>
           ),
