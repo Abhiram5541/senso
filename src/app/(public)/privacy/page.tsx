@@ -10,7 +10,7 @@ export default function PrivacyPage() {
       eyebrow="Legal"
       title="Privacy"
       summary="What SENSO collects, where it comes from, how long it is kept, and how a creator can correct or remove it."
-      updated="27 August 2026"
+      updated="10 November 2026"
       sections={[
         {
           heading: "What is collected, and from where",
@@ -47,6 +47,57 @@ export default function PrivacyPage() {
           ),
         },
         {
+          heading: "YouTube API Services",
+          body: (
+            <>
+              <p>
+                SENSO uses YouTube API Services. By using SENSO you agree to be bound by the{" "}
+                <a
+                  href="https://www.youtube.com/t/terms"
+                  className="rounded font-medium text-brand-ink underline underline-offset-2"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  YouTube Terms of Service
+                </a>
+                , and Google&apos;s handling of any data it receives is governed by the{" "}
+                <a
+                  href="https://policies.google.com/privacy"
+                  className="rounded font-medium text-brand-ink underline underline-offset-2"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Google Privacy Policy
+                </a>
+                .
+              </p>
+              <p>
+                From the YouTube Data API, SENSO stores a channel&apos;s public profile and
+                statistics, and for its recent uploads the video id, title, caption, publish
+                time, hashtags, thumbnail URL and public counts. A creator who connects their
+                own channel also grants read access to that channel&apos;s YouTube Analytics.
+                Those authorized figures are shown to the creator who authorized them and to no
+                one else: never to a brand, never in search, never in an export, and never
+                through the SENSO API.
+              </p>
+              <p>
+                A creator may revoke SENSO&apos;s access to their YouTube account at any time,
+                either by disconnecting it inside their SENSO creator portal or through{" "}
+                <a
+                  href="https://security.google.com/settings/security/permissions"
+                  className="rounded font-medium text-brand-ink underline underline-offset-2"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Google&apos;s security settings page
+                </a>
+                . Revoking stops authorized analytics refreshing immediately, and the stored
+                tokens are discarded.
+              </p>
+            </>
+          ),
+        },
+        {
           heading: "Correction and removal",
           body: (
             <>
@@ -68,12 +119,23 @@ export default function PrivacyPage() {
         {
           heading: "Retention",
           body: (
-            <p>
-              Historical snapshots are retained because the product&apos;s value depends on
-              them — growth, consistency and anomaly detection are all comparisons against a
-              creator&apos;s own past. Raw research artifacts and comment text are retained only
-              as long as needed to produce the derived signals, then discarded.
-            </p>
+            <>
+              <p>
+                Historical snapshots are retained because the product&apos;s value depends on
+                them — growth, consistency and anomaly detection are all comparisons against a
+                creator&apos;s own past. Raw research artifacts and comment text are retained only
+                as long as needed to produce the derived signals, then discarded.
+              </p>
+              <p>
+                Stored YouTube metadata is kept inside the age its platform allows. Public
+                statistics — views, likes and comment counts — and the scores SENSO derives
+                from them are retained for up to 36 calendar months. Everything else read from
+                the API, including video titles, captions and creator names, is re-read from
+                YouTube on a rolling cycle of under 30 days, so no copy is older than that. A
+                video the API no longer returns has been removed or made private by its owner,
+                and its record is removed from SENSO in turn.
+              </p>
+            </>
           ),
         },
       ]}
