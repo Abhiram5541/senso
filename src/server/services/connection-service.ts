@@ -155,6 +155,16 @@ export async function fetchOwnChannel(
   );
 
   if (!response.ok) {
+    // The status alone cannot tell these apart: a Google account with no
+    // channel, a revoked or wrong-scoped grant, and an exhausted quota all
+    // arrive as 403, and the person who sees the notice is the one creator
+    // who cannot diagnose any of them. Google's error envelope names the
+    // reason and never carries the token, so log it.
+    const detail = (await response.text().catch(() => "")).slice(0, 300);
+    console.error(
+      `[youtube-connect] HTTP ${response.status} from channels.list?mine=true: ${detail}`,
+    );
+
     throw new ConnectorUnavailable(
       "youtube",
       response.status === 401 || response.status === 403 ? "forbidden" : "upstream_error",
