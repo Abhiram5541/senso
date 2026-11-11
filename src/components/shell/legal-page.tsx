@@ -2,6 +2,11 @@ import * as React from "react";
 import { MarketingChrome } from "@/components/shell/marketing-chrome";
 import { Eyebrow } from "@/components/ui/card";
 
+/** Headings double as anchors, so a policy section can be linked to directly. */
+function slug(heading: string): string {
+  return heading.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
 export interface LegalSection {
   heading: string;
   body: React.ReactNode;
@@ -35,7 +40,7 @@ export function LegalPage({
 
         <div className="mt-10 space-y-8">
           {sections.map((section) => (
-            <section key={section.heading} className="border-t border-line pt-6">
+            <section key={section.heading} id={slug(section.heading)} className="border-t border-line pt-6">
               <h2 className="text-md font-bold text-ink">{section.heading}</h2>
               <div className="mt-2 space-y-3 leading-6 text-ink-muted">
                 {section.body}

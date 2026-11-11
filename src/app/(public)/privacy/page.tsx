@@ -10,7 +10,7 @@ export default function PrivacyPage() {
       eyebrow="Legal"
       title="Privacy"
       summary="What SENSO collects, where it comes from, how long it is kept, and how a creator can correct or remove it."
-      updated="10 November 2026"
+      updated="11 November 2026"
       sections={[
         {
           heading: "What is collected, and from where",
@@ -112,6 +112,30 @@ export default function PrivacyPage() {
                 <Link href="/help/verification" className="rounded font-medium text-brand-ink underline underline-offset-2">
                   How verification works
                 </Link>
+              </p>
+            </>
+          ),
+        },
+        {
+          heading: "Data deletion",
+          body: (
+            <>
+              <p>
+                Removing SENSO from a connected Instagram or YouTube account revokes the grant
+                on both sides: the platform tells SENSO, and the stored token and the
+                connection are deleted immediately. The creator&apos;s public profile is not
+                deleted with them, because it was never read from the grant — it comes from
+                the platforms&apos; public APIs, the same way an unconnected creator&apos;s
+                does.
+              </p>
+              <p>
+                To have the public profile removed as well, write to{" "}
+                <a href="mailto:privacy@senso360.com" className="rounded font-medium text-brand-ink underline underline-offset-2">
+                  privacy@senso360.com
+                </a>{" "}
+                with the account handle. A deletion request raised through Meta returns a
+                confirmation code; quote it in that email and it will be matched to the
+                request.
               </p>
             </>
           ),

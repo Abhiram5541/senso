@@ -282,3 +282,21 @@ export async function instagramAccessTokenFor(accountId: string): Promise<string
     return null;
   }
 }
+
+/**
+ * Revokes a grant from Meta's side of the handshake.
+ *
+ * The deauthorize and data-deletion callbacks identify the person by the
+ * Instagram user id, which is all Meta knows about them — there is no session
+ * on these requests. Returns whether anything was found, because the
+ * data-deletion response has to be honest about what it deleted.
+ */
+export async function revokeInstagramByPlatformUser(platformUserId: string): Promise<boolean> {
+  const account = readRecords().accounts.find(
+    (item) => item.platform === "instagram" && item.platformAccountId === platformUserId,
+  );
+  if (!account) return false;
+
+  await disconnectInstagram(account.influencerId, account.id);
+  return true;
+}
