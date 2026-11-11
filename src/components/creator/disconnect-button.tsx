@@ -6,8 +6,16 @@ import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { Notice } from "@/components/ui/states";
 
+const LABEL = { youtube: "YouTube", instagram: "Instagram" } as const;
+
 /** Ends the platform's side of the grant. The creator's public profile stays. */
-export function DisconnectButton({ disabled }: { disabled?: boolean }) {
+export function DisconnectButton({
+  platform = "youtube",
+  disabled,
+}: {
+  platform?: keyof typeof LABEL;
+  disabled?: boolean;
+}) {
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
   const [busy, setBusy] = React.useState(false);
@@ -17,7 +25,7 @@ export function DisconnectButton({ disabled }: { disabled?: boolean }) {
     setBusy(true);
     setFailed(false);
     try {
-      const response = await fetch("/api/internal/connect/youtube/disconnect", {
+      const response = await fetch(`/api/internal/connect/${platform}/disconnect`, {
         method: "POST",
       });
       if (!response.ok) throw new Error(String(response.status));
@@ -45,7 +53,7 @@ export function DisconnectButton({ disabled }: { disabled?: boolean }) {
       <Dialog
         open={open}
         onClose={() => setOpen(false)}
-        title="Disconnect YouTube?"
+        title={`Disconnect ${LABEL[platform]}?`}
         size="sm"
         footer={
           <>

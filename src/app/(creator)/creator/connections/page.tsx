@@ -21,8 +21,8 @@ const SCOPES: Record<Platform, string[]> = {
     "yt-analytics.readonly — audience and retention for your own channel",
   ],
   instagram: [
-    "instagram_basic — profile and media",
-    "instagram_manage_insights — reach, impressions and audience for a professional account",
+    "instagram_business_basic — profile and media",
+    "instagram_business_manage_insights — reach, impressions and audience for your own account",
   ],
   tiktok: [],
   x: ["tweet.read — post statistics", "users.read — profile and identity match", "offline.access — stay connected"],
@@ -143,12 +143,14 @@ export default async function ConnectionsPage({
 
               {available ? (
                 <div className="flex flex-wrap gap-2 border-t border-line pt-3">
-                  {platform === "youtube" ? (
-                    // A plain link, not a fetch: this leaves the app for
-                    // Google's consent screen, and a redirect a browser
+                  {platform === "youtube" || platform === "instagram" ? (
+                    // A plain link, not a fetch: this leaves the app for the
+                    // platform's consent screen, and a redirect a browser
                     // follows itself is the whole mechanism.
-                    <LinkButton href="/api/internal/connect/youtube/start" variant="primary">
-                      {account?.isConnected ? "Reconnect" : "Connect YouTube"}
+                    <LinkButton href={`/api/internal/connect/${platform}/start`} variant="primary">
+                      {account?.isConnected
+                        ? "Reconnect"
+                        : `Connect ${PLATFORM_LABEL[platform]}`}
                     </LinkButton>
                   ) : (
                     <Button variant="primary" disabled>
@@ -156,8 +158,8 @@ export default async function ConnectionsPage({
                     </Button>
                   )}
                   {account?.isConnected &&
-                    (platform === "youtube" ? (
-                      <DisconnectButton />
+                    (platform === "youtube" || platform === "instagram" ? (
+                      <DisconnectButton platform={platform} />
                     ) : (
                       <Button variant="ghost" disabled>
                         Disconnect
