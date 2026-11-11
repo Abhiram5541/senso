@@ -7,7 +7,7 @@ import {
   refreshInstagramToken,
   type InstagramTokens,
 } from "@/server/connectors/instagram/oauth";
-import { readRecords, type RawOAuthGrant } from "@/server/data/records";
+import { EPOCH, readRecords, type RawAccount, type RawOAuthGrant } from "@/server/data/records";
 import { removeGrant, upsertGrant, upsertIngested } from "@/server/data/ingested-store";
 import { ConnectionRefused, issueState, verifyState } from "@/server/services/connection-service";
 
@@ -84,12 +84,16 @@ export async function completeInstagramConnection(
     );
   }
 
-  const account = readRecords().accounts.find(
+  const existing = readRecords().accounts.find(
     (item) => item.influencerId === verified.influencerId && item.platform === "instagram",
   );
-  if (!account) {
-    throw new ConnectionRefused("no_channel", "No tracked Instagram account for this creator.");
-  }
+
+  // A creator SENSO indexed from YouTube has no Instagram row, and nothing has
+  // ever told us which handle is theirs. The grant is that answer: consent
+  // from the account *is* the proof of ownership, which is the same reasoning
+  // the YouTube claim flow runs on. So a first connection adds the account
+  // rather than refusing for the want of a record it could have created.
+  const account = existing ?? (await attachInstagramAccount(verified.influencerId, owned));
 
   if (account.platformAccountId !== owned.userId) {
     throw new ConnectionRefused(
@@ -107,6 +111,65 @@ export async function completeInstagramConnection(
     // Matched by construction: the grant is refused above otherwise.
     identityMatched: true,
   };
+}
+
+/**
+ * Adds an Instagram account row to a creator who had none.
+ *
+ * The figures are left at zero and `lastSyncedAt` at the epoch rather than
+ * guessed, so the nightly `refreshInstagramStale` treats the row as stale and
+ * reads the real numbers on its next pass. A follower count invented here
+ * would be indistinguishable from an observed one the moment it was stored,
+ * and this platform's whole claim is that it never does that.
+ *
+ * `isPrimary` stays false: the creator's primary account is whatever they were
+ * indexed from, and reassigning it would move every snapshot and score that
+ * hangs off it.
+ */
+async function attachInstagramAccount(
+  influencerId: string,
+  owned: { userId: string; username: string },
+): Promise<RawAccount> {
+  const data = readRecords();
+  const influencer = data.influencers.find((item) => item.id === influencerId);
+  const accounts = data.accounts.filter((item) => item.influencerId === influencerId);
+  const primary = accounts.find((item) => item.isPrimary);
+  const snapshot = primary ? data.snapshots.find((item) => item.accountId === primary.id) : null;
+
+  if (!influencer || !primary || !snapshot) {
+    throw new ConnectionRefused(
+      "no_channel",
+      "This profile has no indexed account to attach an Instagram connection to.",
+    );
+  }
+
+  const account: RawAccount = {
+    id: `ig-${owned.userId}`,
+    influencerId,
+    platform: "instagram",
+    platformAccountId: owned.userId,
+    handle: owned.username,
+    url: `https://www.instagram.com/${owned.username}/`,
+    isPrimary: false,
+    isConnected: false,
+    connectedAt: null,
+    needsReauth: false,
+    followers: 0,
+    totalViews: null,
+    contentCount: 0,
+    lastSyncedAt: EPOCH.toISOString(),
+  };
+
+  await upsertIngested([
+    {
+      influencer,
+      accounts: [...accounts, account],
+      snapshot,
+      content: data.content.filter((item) => item.influencerId === influencerId),
+    },
+  ]);
+
+  return account;
 }
 
 async function storeInstagramGrant(
