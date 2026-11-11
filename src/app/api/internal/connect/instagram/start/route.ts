@@ -24,8 +24,9 @@ export async function GET() {
     if (!instagramConnectionConfigured()) {
       throw new ApiFailure(
         "connector_unavailable",
-        "Instagram connection is not configured. META_APP_ID, META_APP_SECRET, " +
-          "META_OAUTH_REDIRECT_URI and TOKEN_ENCRYPTION_KEY must all be set.",
+        "Instagram connection is not configured. INSTAGRAM_APP_ID, INSTAGRAM_APP_SECRET, " +
+          "META_OAUTH_REDIRECT_URI and TOKEN_ENCRYPTION_KEY must all be set. The first two are " +
+          "the Instagram app's own credentials, not the Facebook app id and secret.",
       );
     }
 

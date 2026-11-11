@@ -43,10 +43,20 @@ export interface InstagramOAuthConfig {
   redirectUri: string;
 }
 
-/** Null rather than throwing, so connector health can report without a catch. */
+/**
+ * Null rather than throwing, so connector health can report without a catch.
+ *
+ * These are the *Instagram* app credentials, not the Facebook ones the
+ * Business Discovery connector uses. A Meta app that has Instagram Login added
+ * carries a second id and secret — "Instagram app ID" under Instagram → API
+ * setup with Instagram login — and `instagram.com/oauth/authorize` accepts
+ * only that one. Passing the Facebook `META_APP_ID` is answered with "Invalid
+ * platform app", which names neither the parameter nor the fix, so they get
+ * their own variables rather than a fallback that would reproduce it silently.
+ */
 export function instagramOAuthConfig(): InstagramOAuthConfig | null {
-  const appId = process.env.META_APP_ID?.trim();
-  const appSecret = process.env.META_APP_SECRET?.trim();
+  const appId = process.env.INSTAGRAM_APP_ID?.trim();
+  const appSecret = process.env.INSTAGRAM_APP_SECRET?.trim();
   const redirectUri = process.env.META_OAUTH_REDIRECT_URI?.trim();
 
   if (!appId || !appSecret || !redirectUri) return null;
@@ -59,7 +69,9 @@ function requireConfig(): InstagramOAuthConfig {
     throw new ConnectorUnavailable(
       "instagram",
       "credentials_missing",
-      "META_APP_ID, META_APP_SECRET and META_OAUTH_REDIRECT_URI must all be set to connect an account.",
+      "INSTAGRAM_APP_ID, INSTAGRAM_APP_SECRET and META_OAUTH_REDIRECT_URI must all be set to " +
+        "connect an account. The first two are the Instagram app's own credentials, shown under " +
+        "Instagram → API setup with Instagram login — not the Facebook app id and secret.",
     );
   }
   return config;
