@@ -7,7 +7,11 @@ import { ProvenanceMix } from "@/components/intelligence/provenance";
 import { HealthPanel } from "@/components/profile/health-panel";
 import { ProfileTabs } from "@/components/profile/profile-tabs";
 import { AuthorizedAnalytics } from "@/components/creator/authorized-analytics";
-import { creatorAnalytics } from "@/server/services/creator-analytics-service";
+import { InstagramAnalytics } from "@/components/creator/instagram-analytics";
+import {
+  creatorAnalytics,
+  instagramCreatorAnalytics,
+} from "@/server/services/creator-analytics-service";
 
 export const metadata: Metadata = { title: "Your analytics" };
 export const dynamic = "force-dynamic";
@@ -21,7 +25,10 @@ export default async function CreatorAnalyticsPage() {
   const { profile } = await requireOwnProfile("/creator/analytics");
   // Authorized Data, read live and never stored. Visible to this creator
   // only — see creator-analytics-service for why that is enforced there.
-  const analytics = await creatorAnalytics();
+  const [analytics, instagram] = await Promise.all([
+    creatorAnalytics(),
+    instagramCreatorAnalytics(),
+  ]);
 
   return (
     <>
@@ -39,6 +46,8 @@ export default async function CreatorAnalyticsPage() {
         )}
 
         <AuthorizedAnalytics result={analytics} />
+
+        <InstagramAnalytics result={instagram} />
 
         <HealthPanel
           health={profile.health}

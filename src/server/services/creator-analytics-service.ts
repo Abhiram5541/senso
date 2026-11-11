@@ -3,6 +3,9 @@ import { fetchChannelAnalytics, type ChannelAnalytics } from "@/server/connector
 import { readRecords } from "@/server/data/records";
 import { requirePermission } from "@/server/auth/rbac";
 import { accessTokenFor } from "@/server/services/connection-service";
+import { ConnectorUnavailable as InstagramUnavailable } from "@/server/connectors/instagram";
+import { fetchInstagramInsights, type InstagramInsights } from "@/server/connectors/instagram/insights";
+import { instagramAccessTokenFor } from "@/server/services/instagram-connection-service";
 
 /* ---------------------------------------------------------------------------
  * Authorized Data, and the one rule that separates it from everything else
@@ -58,6 +61,48 @@ export async function creatorAnalytics(days = 28): Promise<CreatorAnalytics> {
         state: error.reason === "forbidden" ? "needs_reauth" : "unavailable",
         reason: error.message,
       } as CreatorAnalytics;
+    }
+    throw error;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * The same boundary, on the other platform.
+ *
+ * Instagram's grant is held against the creator's Instagram account row
+ * rather than their primary one — most creators here were indexed from
+ * YouTube — so the lookup differs, and nothing else does. The permission
+ * check, the refusal to take an account id from input, and the rule against
+ * storing what comes back are identical, and deliberately so: two copies of
+ * an access rule that drift are worse than one rule applied twice.
+ * ------------------------------------------------------------------------ */
+
+export type InstagramCreatorAnalytics =
+  | { state: "ok"; data: InstagramInsights }
+  | { state: "not_connected" }
+  | { state: "needs_reauth" }
+  | { state: "unavailable"; reason: string };
+
+export async function instagramCreatorAnalytics(days = 28): Promise<InstagramCreatorAnalytics> {
+  const user = await requirePermission("self:analytics_read");
+  if (!user.influencerId) return { state: "not_connected" };
+
+  const account = readRecords().accounts.find(
+    (item) => item.influencerId === user.influencerId && item.platform === "instagram",
+  );
+  if (!account || !account.isConnected) return { state: "not_connected" };
+
+  const token = await instagramAccessTokenFor(account.id);
+  if (!token) return { state: "needs_reauth" };
+
+  try {
+    return { state: "ok", data: await fetchInstagramInsights(token, days) };
+  } catch (error) {
+    if (error instanceof InstagramUnavailable) {
+      return {
+        state: error.reason === "forbidden" ? "needs_reauth" : "unavailable",
+        reason: error.message,
+      } as InstagramCreatorAnalytics;
     }
     throw error;
   }
