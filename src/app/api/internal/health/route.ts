@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getHeapStatistics } from "node:v8";
 import { readRecords } from "@/server/data/records";
+import { quotaStatus } from "@/server/connectors/youtube/quota";
 
 /**
  * Liveness for the VPS healthcheck and any uptime monitor. Unauthenticated
@@ -39,6 +40,11 @@ export function GET() {
       heapLimitMb: heapLimitMb || undefined,
       availableMb: availableMb || undefined,
       slimContent: process.env.SENSO_SLIM_CONTENT === "true",
+      // The day's YouTube spend, so quota exhaustion is visible here rather
+      // than only in the Cloud console after a creator has already failed to
+      // connect. `backgroundRemaining` reaching 0 is normal; it means the
+      // reserve is doing its job and connections still work.
+      youtubeQuota: quotaStatus(),
       uptimeSeconds: Math.round(process.uptime()),
     },
     { status: ok ? 200 : 503, headers: { "cache-control": "no-store" } },

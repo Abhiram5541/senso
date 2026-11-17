@@ -1,4 +1,6 @@
 import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
+import { z } from "zod";
+import { recordSpend } from "@/server/connectors/youtube/quota";
 import { sealToken, openToken, tokenCryptoConfigured } from "@/server/auth/token-crypto";
 import { ConnectorUnavailable } from "@/server/connectors/youtube";
 import {
@@ -146,6 +148,32 @@ export async function completeConnection(
  *  direction — "which channel does this account own, and which record is
  *  that?" — and a second copy of this call is a second place for the
  *  identity check to drift. */
+/** Google's error envelope; `reason` is what separates the three 403s above. */
+const GoogleErrorReason = z.object({
+  error: z.object({
+    errors: z.array(z.object({ reason: z.string() })).default([]),
+  }),
+});
+
+/**
+ * The reason code, or "" when the body is not Google's envelope.
+ *
+ * A gateway between us and Google answers 403 with HTML, and a body that is
+ * not JSON must degrade to the generic message rather than throw inside the
+ * error path — an exception here would replace a bad-but-useful notice with a
+ * 500 and lose the logged detail entirely.
+ */
+function googleErrorReason(raw: string): string {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw) as unknown;
+  } catch {
+    return "";
+  }
+  const result = GoogleErrorReason.safeParse(parsed);
+  return result.success ? (result.data.error.errors[0]?.reason ?? "") : "";
+}
+
 export async function fetchOwnChannel(
   accessToken: string,
 ): Promise<{ channelId: string; title: string } | null> {
@@ -154,21 +182,48 @@ export async function fetchOwnChannel(
     { headers: { Authorization: `Bearer ${accessToken}` }, cache: "no-store" },
   );
 
+  // Charged to the project's daily budget like every other read, even though
+  // it travels on the creator's token. Counted after the call so the ledger
+  // reflects what YouTube actually billed.
+  recordSpend(1);
+
   if (!response.ok) {
     // The status alone cannot tell these apart: a Google account with no
     // channel, a revoked or wrong-scoped grant, and an exhausted quota all
     // arrive as 403, and the person who sees the notice is the one creator
-    // who cannot diagnose any of them. Google's error envelope names the
-    // reason and never carries the token, so log it.
-    const detail = (await response.text().catch(() => "")).slice(0, 300);
+    // who cannot diagnose any of them. Google's envelope names the reason and
+    // never carries the token, so read it and say which one it was — a
+    // creator told "try again after 08:00 UTC" can act, and one told to
+    // create a YouTube channel can act; "HTTP 403" leaves them stuck.
+    const raw = (await response.text().catch(() => "")).slice(0, 600);
     console.error(
-      `[youtube-connect] HTTP ${response.status} from channels.list?mine=true: ${detail}`,
+      `[youtube-connect] HTTP ${response.status} from channels.list?mine=true: ${raw}`,
     );
+
+    const code = googleErrorReason(raw);
+
+    if (code === "quotaExceeded" || code === "rateLimitExceeded") {
+      throw new ConnectorUnavailable(
+        "youtube",
+        "quota_exceeded",
+        "YouTube's daily quota for SENSO is used up, so your channel could not be " +
+          "confirmed. Your authorisation was not stored. Try connecting again after the " +
+          "quota resets at 08:00 UTC.",
+      );
+    }
+    if (code === "youtubeSignupRequired") {
+      throw new ConnectorUnavailable(
+        "youtube",
+        "not_found",
+        "That Google account has no YouTube channel, so there is nothing to verify. " +
+          "Sign in with the Google account that owns your channel.",
+      );
+    }
 
     throw new ConnectorUnavailable(
       "youtube",
       response.status === 401 || response.status === 403 ? "forbidden" : "upstream_error",
-      `Could not read the connected channel (HTTP ${response.status}).`,
+      `Could not read the connected channel (HTTP ${response.status}${code ? `, ${code}` : ""}).`,
     );
   }
 

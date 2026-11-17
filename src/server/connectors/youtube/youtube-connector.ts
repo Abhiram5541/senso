@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { canSpend, quotaStatus, recordSpend, type QuotaKind } from "./quota";
 import type { Provenance } from "@/lib/contracts/common";
 
 /**
@@ -147,7 +148,26 @@ async function call<T extends z.ZodTypeAny>(
   resource: keyof typeof QUOTA_COST,
   params: Record<string, string>,
   schema: T,
+  kind: QuotaKind = "background",
 ): Promise<z.infer<T>> {
+  const cost = QUOTA_COST[resource];
+
+  // Refused here rather than at YouTube, because the units a background pass
+  // would spend are the ones a creator's identity check needs later today.
+  if (!canSpend(cost, kind)) {
+    const { spent, limit, reserve } = quotaStatus();
+    throw new ConnectorUnavailable(
+      "youtube",
+      "quota_exceeded",
+      // The words "quota exhausted" are load-bearing: `snapshotCutShort` reads
+      // them to decide that today's pass is finished rather than interrupted,
+      // and without them the scheduler would re-run this pass every tick,
+      // refused each time, until midnight.
+      `YouTube daily quota exhausted for background work: ${spent} of ${limit} units spent, ` +
+        `${reserve} held in reserve for creator connections. This ${resource} read was not made.`,
+    );
+  }
+
   const url = new URL(`${API}/${resource}`);
   for (const [name, value] of Object.entries(params)) url.searchParams.set(name, value);
   url.searchParams.set("key", requireKey());
@@ -162,6 +182,11 @@ async function call<T extends z.ZodTypeAny>(
       `YouTube API unreachable: ${String(cause)}`,
     );
   }
+
+  // Charged whatever the outcome: YouTube bills a rejected read too, and a
+  // ledger that only counted successes would drift under exactly the error
+  // conditions it exists to prevent.
+  recordSpend(cost);
 
   const body: unknown = await response.json().catch(() => null);
 
